@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Event Finder — discover events near you, with location-based search and user profiles.">
+    <meta name="author" content="Event Finder Team">
+    <link rel="stylesheet" href="everything.css">
+
+    <title>Event Finder | Home</title>
+</head>
+
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header id="navbar">
+        <h1>Event Finder</h1>
+
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="favorites.html">Favorites</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main id="main-content">
+    <section id="hero">
+        <h2>Find Events Near You</h2>
+        <p>Discover concerts, workshops, festivals, and more.</p>
+
+        <div id="search-bar">
+            <input type="text" id="search-input" placeholder="Search events...">
+            <button id="search-btn" type="button">Search</button>
+        </div>
+    </section>
+
+    <section id="filters">
+
+        <h3>Filter Events</h3>
+
+        <form id="filter-form">
+
+            <div class="filter-group">
+                <label for="filter-date">Date</label>
+                <input type="date" id="filter-date">
+            </div>
+
+            <div class="filter-group">
+                <label for="filter-time">Time</label>
+                <input type="time" id="filter-time">
+            </div>
+
+            <div class="filter-group">
+                <label for="filter-location">Location</label>
+                <input type="text" id="filter-location" placeholder="City or venue">
+            </div>
+
+            <div class="filter-group">
+                <label for="filter-interest">Category</label>
+                <select id="filter-interest">
+                    <option value="">All</option>
+                    <option value="music">Music</option>
+                    <option value="sports">Sports</option>
+                    <option value="tech">Tech</option>
+                    <option value="art">Art</option>
+                    <option value="food">Food</option>
+                </select>
+            </div>
+
+            <button type="submit">Apply Filters</button>
+
+        </form>
+    </section>
+
+    <section id="events-section">
+
+        <h3>Events Near You</h3>
+
+        <div id="events-container">
+
+            <div class="event-card">
+
+                <div class="event-preview">
+                    <img src="placeholder.jpg" alt="Event image">
+                </div>
+
+                <h4>Sample Event Title</h4>
+
+                <p class="event-info">Location • Jan 5 • 7:00 PM</p>
+
+                <button class="details-btn" type="button">View Details</button>
+                <button class="favorite-btn" type="button">♡ Add to Favorites</button>
+
+            </div>
+
+
+        </div>
+    </section>
+
+        </main>
+        <script>
+        // get location and fetch nearby events
+        async function loadNearby() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(async pos => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                try {
+                    const res = await fetch(`api/events.php?lat=${lat}&lng=${lng}&radius=20`);
+                    const events = await res.json();
+                    const container = document.getElementById('events-container');
+                    container.innerHTML = '';
+                    for (const e of events) {
+                        const card = document.createElement('div');
+                        card.className = 'event-card';
+                        card.innerHTML = `
+                            <div class="event-preview"><img src="placeholder.jpg" alt="Event image"></div>
+                            <h4>${e.title}</h4>
+                            <p class="event-info">${e.location} • ${e.date} • ${e.time}</p>
+                            <p class="event-info">${(e.distance_km||0).toFixed(1)} km away</p>
+                            <button class="details-btn" type="button">View Details</button>
+                            <button class="favorite-btn" type="button">♡ Add to Favorites</button>
+                        `;
+                        container.appendChild(card);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }, err => console.warn('Geolocation denied or unavailable'));
+        }
+        document.addEventListener('DOMContentLoaded', loadNearby);
+        </script>
+
+    <footer>
+        <p>© 2025 Event Finder</p>
+        <p class="disclaimer">Disclaimer: This site is for educational/demo purposes only. Do not use for production. Data may be fictional.</p>
+        <p class="ai-disclosure">AI-assistance: Some code or content may have been generated or assisted using AI tools — see <a href="README.md">README</a> for details.</p>
+        <p class="last-updated">Last updated: 2025-11-25</p>
+    </footer>
+
+</body>
+</html>

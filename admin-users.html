@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin user management page for Event Finder (dev only).">
+    <meta name="author" content="Event Finder Team">
+    <title>Admin - Users</title>
+    <link rel="stylesheet" href="everything.css">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header>
+        <h1>Admin Dashboard - Users</h1>
+        <nav>
+            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-add-event.html">Add Event</a>
+            <a href="index.html">Home</a>
+        </nav>
+    </header>
+
+    <main>
+        <table id="users-table">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Age</th>
+                    <th>Registered Events</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- User rows populated dynamically -->
+            </tbody>
+        </table>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Eventify Admin</p>
+        <p class="disclaimer">Disclaimer: Admin pages are for development/demonstration only. Protect access in production.</p>
+        <p class="ai-disclosure">AI-assistance: Some code may have been generated or assisted using AI tools — see <a href="README.md">README</a>.</p>
+        <p class="last-updated">Last updated: 2025-11-25</p>
+    </footer>
+
+    <script src="admin.js"></script>
+</body>
+</html>

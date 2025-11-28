@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin page to add events to Event Finder (dev only).">
+    <meta name="author" content="Event Finder Team">
+    <title>Admin - Add Event</title>
+    <link rel="stylesheet" href="everything.css">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header>
+        <h1>Admin Dashboard - Add Event</h1>
+        <nav>
+            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-users.html">Users</a>
+            <a href="index.html">Home</a>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <form id="add-event-form">
+            <label for="event-title">Event Title:</label>
+            <input type="text" id="event-title" name="event-title" required>
+
+            <label for="event-description">Description:</label>
+            <textarea id="event-description" name="event-description" required></textarea>
+
+            <label for="event-date">Date:</label>
+            <input type="date" id="event-date" name="event-date" required>
+
+            <label for="event-time">Time:</label>
+            <input type="time" id="event-time" name="event-time" required>
+
+            <label for="event-location">Location:</label>
+            <input type="text" id="event-location" name="event-location" required>
+
+            <label for="event-age">Age Restriction:</label>
+            <input type="number" id="event-age" name="event-age" min="0">
+
+            <label for="event-price">Ticket Price:</label>
+            <input type="number" id="event-price" name="event-price" min="0" step="0.01">
+
+            <label for="event-media">Upload Images/Videos:</label>
+            <input type="file" id="event-media" name="event-media" multiple>
+
+            <button type="submit">Add Event</button>
+        </form>
+        <script src="scripts/admin-events.js"></script>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Eventify Admin</p>
+        <p class="disclaimer">Disclaimer: Admin pages are for development/demonstration only. Protect access in production.</p>
+        <p class="ai-disclosure">AI-assistance: Some code may have been generated or assisted using AI tools — see <a href="README.md">README</a>.</p>
+        <p class="last-updated">Last updated: 2025-11-25</p>
+    </footer>
+
+    <script src="admin.js"></script>
+</body>
+</html>
