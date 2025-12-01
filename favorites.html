@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Your saved favorite events on Event Finder.">
+    <meta name="author" content="Event Finder Team">
+    <link rel="stylesheet" href="favorites.css">
+    <title>Favorites | Event Finder</title>
+</head>
+<body>
+    <a class="skip-link" href="#favorites-section">Skip to content</a>
+
+    <!-- HEADER -->
+    <header id="navbar">
+        <div class="tm-logo">
+            <a href="index.html">EventFinder</a>
+        </div>
+        <nav class="tm-links">
+            <a href="index.html">Home</a>
+            <a href="favorites.html" class="active">Favorites</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <!-- FAVORITES HEADER -->
+    <section id="favorites-header">
+        <h2>Your Favorite Events</h2>
+        <p>A collection of events you've saved.</p>
+    </section>
+
+    <!-- FAVORITES GRID -->
+    <main id="favorites-section">
+        <div id="favorites-container">
+            <!-- Example favorite event card -->
+            <div class="favorite-card">
+                <img src="placeholder.jpg" alt="Event image">
+                <div class="favorite-info">
+                    <h3>Sample Event Title</h3>
+                    <p class="event-details">Location • Date • Time</p>
+                    <div class="favorite-actions">
+                        <button class="details-btn">View Details</button>
+                        <button class="remove-btn">Remove</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional cards populated by JS -->
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>© 2025 Event Finder</p>
+        <p class="disclaimer">Disclaimer: This site is for educational/demo purposes only. Do not use for production.</p>
+        <p class="ai-disclosure">AI-assistance: Some content may have been generated or assisted using AI tools — see <a href="README.md">README</a>.</p>
+        <p class="last-updated">Last updated: 2025-11-25</p>
+    </footer>
+</body>
+</html>

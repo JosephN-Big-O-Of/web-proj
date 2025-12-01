@@ -3,60 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Admin page to add events to Event Finder (dev only).">
-    <meta name="author" content="Event Finder Team">
-    <title>Admin - Add Event</title>
-    <link rel="stylesheet" href="everything.css">
+    <title>Admin — Add Event</title>
+    <link rel="stylesheet" href="event-add.css">
 </head>
+
 <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
-    <header>
-        <h1>Admin Dashboard - Add Event</h1>
-        <nav>
-            <a href="admin-dashboard.html">Dashboard</a>
-            <a href="admin-users.html">Users</a>
-            <a href="index.html">Home</a>
+
+    <aside class="sidebar">
+        <h2 class="logo">Eventify Admin</h2>
+            <nav>
+            <a class="nav-link" href="admin.html">Admin profile</a>
+            <a class="nav-link" href="admin-users.html">Admin Users</a>
+            <a class="nav-link" href="add-events.html">Add Events</a>          
+            <a class="nav-link" href="edit-events.html">Edit Events</a>
+            <a class="nav-link" href="index.html">Home</a>
         </nav>
-    </header>
+    </aside>
 
-    <main id="main-content">
-        <form id="add-event-form">
-            <label for="event-title">Event Title:</label>
-            <input type="text" id="event-title" name="event-title" required>
+    <main class="content">
+        <header class="page-header">
+            <h1>Add New Event</h1>
+            <p>Fill out the form to create and publish a new event.</p>
+        </header>
 
-            <label for="event-description">Description:</label>
-            <textarea id="event-description" name="event-description" required></textarea>
+        <section class="form-wrapper">
+            <form id="add-event-form">
+                
+                <div class="input-group">
+                    <label>Event Title</label>
+                    <input type="text" required>
+                </div>
 
-            <label for="event-date">Date:</label>
-            <input type="date" id="event-date" name="event-date" required>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea rows="5" required></textarea>
+                </div>
 
-            <label for="event-time">Time:</label>
-            <input type="time" id="event-time" name="event-time" required>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" required>
+                    </div>
 
-            <label for="event-location">Location:</label>
-            <input type="text" id="event-location" name="event-location" required>
+                    <div class="input-group">
+                        <label>Time</label>
+                        <input type="time" required>
+                    </div>
+                </div>
 
-            <label for="event-age">Age Restriction:</label>
-            <input type="number" id="event-age" name="event-age" min="0">
+                <div class="input-group">
+                    <label>Location</label>
+                    <input type="text" required>
+                </div>
 
-            <label for="event-price">Ticket Price:</label>
-            <input type="number" id="event-price" name="event-price" min="0" step="0.01">
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Age Restriction</label>
+                        <input type="number" min="0">
+                    </div>
 
-            <label for="event-media">Upload Images/Videos:</label>
-            <input type="file" id="event-media" name="event-media" multiple>
+                    <div class="input-group">
+                        <label>Ticket Price ($)</label>
+                        <input type="number" min="0" step="0.01">
+                    </div>
+                </div>
 
-            <button type="submit">Add Event</button>
-        </form>
-        <script src="scripts/admin-events.js"></script>
+                <div class="input-group">
+                    <label>Media Uploads</label>
+                    <input type="file" multiple>
+                </div>
+
+                <button type="submit" class="submit-btn">Add Event</button>
+            </form>
+        </section>
+
+        <footer class="footer">
+            <p>© 2025 Eventify Admin — Development Mode</p>
+        </footer>
+
     </main>
 
-    <footer>
-        <p>&copy; 2025 Eventify Admin</p>
-        <p class="disclaimer">Disclaimer: Admin pages are for development/demonstration only. Protect access in production.</p>
-        <p class="ai-disclosure">AI-assistance: Some code may have been generated or assisted using AI tools — see <a href="README.md">README</a>.</p>
-        <p class="last-updated">Last updated: 2025-11-25</p>
-    </footer>
-
-    <script src="admin.js"></script>
 </body>
 </html>

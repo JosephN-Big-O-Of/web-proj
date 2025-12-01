@@ -5,86 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Event details and registration page for Event Finder.">
     <meta name="author" content="Event Finder Team">
-    <link rel="stylesheet" href="everything.css">
+    <link rel="stylesheet" href="event.css">
     <title>Event Details | Event Finder</title>
 </head>
 <body>
-    <a class="skip-link" href="#event-details">Skip to content</a>
+    <a class="skip-link" href="#main-content">Skip to content</a>
 
+    <!-- HEADER -->
     <header id="navbar">
-        <h1>Event Finder</h1>
-
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="favorites.html">Favorites</a></li>
-                <li><a href="login.html">Login</a></li>
-            </ul>
+        <div class="tm-logo">
+            <a href="index.html">EventFinder</a>
+        </div>
+        <nav class="tm-links">
+            <a href="index.html">Home</a>
+            <a href="favorites.html">Favorites</a>
+            <a href="login.html">Login</a>
         </nav>
     </header>
 
-
+    <!-- HERO / BANNER -->
     <section id="event-hero">
-
         <img src="placeholder.jpg" alt="Event image" id="event-main-image">
-
         <div id="event-title-box">
             <h2 id="event-title">Sample Event Title</h2>
             <p id="event-subtitle">Location • Date • Time</p>
         </div>
-
     </section>
 
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+        <div class="event-grid">
+            <!-- Left Column -->
+            <div class="event-info-column">
+                <section id="description">
+                    <h3>Description</h3>
+                    <p id="event-description">
+                        This is a placeholder description for the event. The organizer can update it later.
+                    </p>
+                </section>
 
-    <main id="event-details">
+                <section id="info-section">
+                    <h3>Event Information</h3>
+                    <ul>
+                        <li><strong>Date:</strong> <span id="info-date">January 1, 2025</span></li>
+                        <li><strong>Time:</strong> <span id="info-time">7:00 PM</span></li>
+                        <li><strong>Location:</strong> <span id="info-location">City Name</span></li>
+                        <li><strong>Price:</strong> <span id="info-price">Free / $20 / etc.</span></li>
+                        <li><strong>Age Restriction:</strong> <span id="info-age">18+</span></li>
+                    </ul>
+                </section>
 
-        <section id="description">
-            <h3>Description</h3>
-            <p id="event-description">
-                This is a placeholder description for the event. The organizer can update it later.
-            </p>
-        </section>
-
-
-        <section id="media-section">
-            <h3>Photos & Media</h3>
-
-            <div id="media-gallery">
-                <img src="placeholder.jpg" alt="Event image">
-                <img src="placeholder.jpg" alt="Event image">
-                <div class="video-placeholder">Video Coming Soon</div>
+                <section id="media-section">
+                    <h3>Photos & Media</h3>
+                    <div id="media-gallery">
+                        <img src="placeholder.jpg" alt="Event image">
+                        <img src="placeholder.jpg" alt="Event image">
+                        <div class="video-placeholder">Video Coming Soon</div>
+                    </div>
+                </section>
             </div>
-        </section>
 
-
-        <section id="info-section">
-
-            <h3>Event Information</h3>
-
-            <ul>
-                <li><strong>Date:</strong> <span id="info-date">January 1, 2025</span></li>
-                <li><strong>Time:</strong> <span id="info-time">7:00 PM</span></li>
-                <li><strong>Location:</strong> <span id="info-location">City Name</span></li>
-                <li><strong>Price:</strong> <span id="info-price">Free / $20 / etc.</span></li>
-                <li><strong>Age Restriction:</strong> <span id="info-age">18+</span></li>
-            </ul>
-
-        </section>
-
-        <section id="event-actions">
-            <button id="register-btn" type="button">Register</button>
-            <button id="favorite-btn" type="button">♡ Add to Favorites</button>
-        </section>
-
+            <!-- Right Column -->
+            <aside class="ticket-box">
+                <div class="ticket-card">
+                    <h3>Tickets & Registration</h3>
+                    <p><strong>Price:</strong> Free / $20 / VIP</p>
+                    <p><strong>Available Seats:</strong> 120</p>
+                    <button id="register-btn">Register</button>
+                    <button id="favorite-btn">♡ Add to Favorites</button>
+                </div>
+            </aside>
+        </div>
     </main>
 
-
+    <!-- FOOTER -->
     <footer>
         <p>© 2025 Event Finder</p>
         <p class="disclaimer">Disclaimer: This site is for educational/demo purposes only. Do not use for production.</p>
         <p class="ai-disclosure">AI-assistance: Some content may have been generated or assisted using AI tools — see <a href="README.md">README</a>.</p>
         <p class="last-updated">Last updated: 2025-11-25</p>
     </footer>
-
 </body>
 </html>
