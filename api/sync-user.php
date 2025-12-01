@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -12,9 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $headers = getallheaders();
 $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 
-if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+if (!preg_match('/Bearer\s+(. *)$/i', $authHeader, $matches)) {
     http_response_code(401);
-    echo json_encode(['error' => 'Not authenticated']);
+    echo json_encode(['error' => 'No token provided']);
     exit;
 }
 
@@ -22,26 +22,52 @@ $idToken = $matches[1];
 
 // Verify token with Firebase
 $firebaseUser = verifyFirebaseToken($idToken);
-
 if (!$firebaseUser) {
     http_response_code(401);
     echo json_encode(['error' => 'Invalid token']);
     exit;
 }
 
+// Get request data
+$data = json_decode(file_get_contents('php://input'), true);
+$uid = $firebaseUser['localId'];
+$email = $firebaseUser['email'] ?? '';
+$name = $data['name'] ?? '';
+$age = $data['age'] ?? null;
+
 try {
     $db = require __DIR__ . '/db.php';
-    $stmt = $db->prepare('SELECT id, name, email, age, role, joined_at FROM users WHERE firebase_uid = :uid');
-    $stmt->execute([':uid' => $firebaseUser['localId']]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if (!$user) {
-        http_response_code(404);
-        echo json_encode(['error' => 'User not found in database']);
-        exit;
+    // Check if user exists
+    $stmt = $db->prepare('SELECT id FROM users WHERE firebase_uid = :uid');
+    $stmt->execute([':uid' => $uid]);
+    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($existing) {
+        // Update existing user
+        $stmt = $db->prepare('UPDATE users SET name = :name, email = :email, age = :age WHERE firebase_uid = :uid');
+        $stmt->execute([
+            ':uid' => $uid,
+            ':name' => $name,
+            ':email' => $email,
+            ':age' => $age
+        ]);
+        $userId = $existing['id'];
+    } else {
+        // Insert new user
+        $stmt = $db->prepare('INSERT INTO users (name, email, age, firebase_uid, role, joined_at) VALUES (:name, :email, :age, :uid, :role, :joined)');
+        $stmt->execute([
+            ':name' => $name,
+            ':email' => $email,
+            ':age' => $age,
+            ':uid' => $uid,
+            ':role' => 'user',
+            ':joined' => date('c')
+        ]);
+        $userId = $db->lastInsertId();
     }
     
-    echo json_encode(['user' => $user]);
+    echo json_encode(['success' => true, 'user_id' => $userId]);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);

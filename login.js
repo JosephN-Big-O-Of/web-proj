@@ -1,90 +1,133 @@
-const loginTab = document.getElementById('login-tab');
-const signupTab = document.getElementById('signup-tab');
-const loginForm = document.getElementById('login-form');
-const signupForm = document.getElementById('signup-form');
-const switchToSignup = document.getElementById('switch-to-signup');
-const switchToLogin = document.getElementById('switch-to-login');
+import { auth } from "./firebase-config.js";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const loginTab = document.getElementById("login-tab");
+const signupTab = document.getElementById("signup-tab");
+const loginForm = document.getElementById("login-form");
+const signupForm = document.getElementById("signup-form");
+const switchToSignup = document.getElementById("switch-to-signup");
+const switchToLogin = document.getElementById("switch-to-login");
 
 function showLogin() {
-  loginForm.classList.add('active');
-  signupForm.classList.remove('active');
-  loginTab.classList.add('active');
-  signupTab.classList.remove('active');
+  loginForm.classList.add("active");
+  signupForm.classList.remove("active");
+  loginTab.classList.add("active");
+  signupTab.classList.remove("active");
 }
 
 function showSignup() {
-  signupForm.classList.add('active');
-  loginForm.classList.remove('active');
-  signupTab.classList.add('active');
-  loginTab.classList.remove('active');
+  signupForm.classList.add("active");
+  loginForm.classList.remove("active");
+  signupTab.classList.add("active");
+  loginTab.classList.remove("active");
 }
 
-loginTab.addEventListener('click', showLogin);
-signupTab.addEventListener('click', showSignup);
-switchToSignup.addEventListener('click', (e) => { e.preventDefault(); showSignup(); });
-switchToLogin.addEventListener('click', (e) => { e.preventDefault(); showLogin(); });
-
-// Handle login via API
-loginForm.addEventListener('submit', async (e) => {
+loginTab.addEventListener("click", showLogin);
+signupTab.addEventListener("click", showSignup);
+switchToSignup.addEventListener("click", (e) => {
   e.preventDefault();
-  const emailEl = document.getElementById('login-email');
-  const passwordEl = document.getElementById('login-password');
-  const errorEl = document.getElementById('login-error');
-  errorEl.style.display = 'none';
-  errorEl.textContent = '';
+  showSignup();
+});
+switchToLogin.addEventListener("click", (e) => {
+  e.preventDefault();
+  showLogin();
+});
+
+// ========================================
+// LOGIN HANDLER (Firebase)
+// ========================================
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const emailEl = document.getElementById("login-email");
+  const passwordEl = document.getElementById("login-password");
+  const errorEl = document.getElementById("login-error");
+
+  errorEl.style.display = "none";
+  errorEl.textContent = "";
+
   const email = emailEl.value.trim();
   const password = passwordEl.value;
 
-  // client-side validation
+  // Client-side validation
   const clientErrors = [];
-  if (!email) clientErrors.push('Email is required');
-  else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) clientErrors.push('Enter a valid email');
-  if (!password) clientErrors.push('Password is required');
+  if (!email) clientErrors.push("Email is required");
+  else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+    clientErrors.push("Enter a valid email");
+  if (!password) clientErrors.push("Password is required");
+
   if (clientErrors.length) {
-    errorEl.textContent = clientErrors.join('. ');
-    errorEl.style.display = 'block';
+    errorEl.textContent = clientErrors.join(".  ");
+    errorEl.style.display = "block";
     return;
   }
 
   try {
-    const res = await fetch('api/login.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password })
+    // Sign in with Firebase
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const user = userCredential.user;
+
+    // Get Firebase ID token
+    const idToken = await user.getIdToken();
+
+    // Sync with backend (optional - ensures user exists in your DB)
+    await fetch("api/sync-user.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+      }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      // server may return structured errors
-      if (data && data.errors) {
-        errorEl.textContent = Object.values(data.errors).join('. ');
-      } else if (data && data.error) {
-        errorEl.textContent = data.error;
-      } else {
-        errorEl.textContent = 'Login failed';
-      }
-      errorEl.style.display = 'block';
-      return;
+
+    // Redirect to account page
+    window.location.href = "account.html";
+  } catch (error) {
+    console.error("Login error:", error);
+
+    // User-friendly error messages
+    let errorMessage = "Login failed";
+    if (
+      error.code === "auth/invalid-credential" ||
+      error.code === "auth/wrong-password"
+    ) {
+      errorMessage = "Invalid email or password";
+    } else if (error.code === "auth/user-not-found") {
+      errorMessage = "No account found with this email";
+    } else if (error.code === "auth/too-many-requests") {
+      errorMessage = "Too many failed attempts. Try again later.";
+    } else if (error.message) {
+      errorMessage = error.message;
     }
-    // success
-    window.location.href = 'account.html';
-  } catch (err) {
-    errorEl.textContent = err.message || 'Network error';
-    errorEl.style.display = 'block';
+
+    errorEl.textContent = errorMessage;
+    errorEl.style.display = "block";
   }
 });
 
-// Handle signup via API
-signupForm.addEventListener('submit', async (e) => {
+// ========================================
+// SIGNUP HANDLER (Firebase)
+// ========================================
+signupForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const nameEl = document.getElementById('fullname');
-  const ageEl = document.getElementById('age');
-  const emailEl = document.getElementById('signup-email');
-  const passwordEl = document.getElementById('signup-password');
-  const confirmEl = document.getElementById('confirm-password');
-  const errorEl = document.getElementById('signup-error');
-  errorEl.style.display = 'none';
-  errorEl.textContent = '';
+  const nameEl = document.getElementById("fullname");
+  const ageEl = document.getElementById("age");
+  const emailEl = document.getElementById("signup-email");
+  const passwordEl = document.getElementById("signup-password");
+  const confirmEl = document.getElementById("confirm-password");
+  const errorEl = document.getElementById("signup-error");
+
+  errorEl.style.display = "none";
+  errorEl.textContent = "";
 
   const name = nameEl.value.trim();
   const age = ageEl.value.trim();
@@ -92,53 +135,70 @@ signupForm.addEventListener('submit', async (e) => {
   const password = passwordEl.value;
   const confirm = confirmEl.value;
 
-  // client-side validation
+  // Client-side validation
   const clientErrors = [];
-  if (!name) clientErrors.push('Name is required');
-  if (!email) clientErrors.push('Email is required');
-  else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) clientErrors.push('Enter a valid email');
-  if (!password || password.length < 6) clientErrors.push('Password required (min 6 chars)');
-  if (password !== confirm) clientErrors.push('Passwords do not match');
-  if (age && (!/^[0-9]+$/.test(age) || parseInt(age,10) < 0)) clientErrors.push('Age must be a non-negative integer');
+  if (!name) clientErrors.push("Name is required");
+  if (!email) clientErrors.push("Email is required");
+  else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+    clientErrors.push("Enter a valid email");
+  if (!password) clientErrors.push("Password is required");
+  else if (password.length < 6)
+    clientErrors.push("Password must be at least 6 characters");
+  if (password !== confirm) clientErrors.push("Passwords do not match");
+  if (!age || isNaN(age) || parseInt(age) < 1)
+    clientErrors.push("Valid age is required");
+
   if (clientErrors.length) {
-    errorEl.textContent = clientErrors.join('. ');
-    errorEl.style.display = 'block';
+    errorEl.textContent = clientErrors.join(". ");
+    errorEl.style.display = "block";
     return;
   }
 
   try {
-    const res = await fetch('api/register.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, age, email, password })
+    // Create user in Firebase
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const user = userCredential.user;
+
+    // Get Firebase ID token
+    const idToken = await user.getIdToken();
+
+    // Send additional user data to backend
+    await fetch("api/sync-user.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        name: name,
+        age: parseInt(age),
+      }),
     });
-    const data = await res.json();
-    if (!res.ok) {
-      if (data && data.errors) {
-        errorEl.textContent = Object.values(data.errors).join('. ');
-      } else if (data && data.error) {
-        errorEl.textContent = data.error;
-      } else {
-        errorEl.textContent = 'Registration failed';
-      }
-      errorEl.style.display = 'block';
-      return;
+
+    // Redirect to account page
+    window.location.href = "account.html";
+  } catch (error) {
+    console.error("Signup error:", error);
+
+    // User-friendly error messages
+    let errorMessage = "Registration failed";
+    if (error.code === "auth/email-already-in-use") {
+      errorMessage = "Email already registered";
+    } else if (error.code === "auth/invalid-email") {
+      errorMessage = "Invalid email address";
+    } else if (error.code === "auth/weak-password") {
+      errorMessage = "Password is too weak";
+    } else if (error.message) {
+      errorMessage = error.message;
     }
-    // auto-login after register
-    const loginRes = await fetch('api/login.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password })
-    });
-    if (!loginRes.ok) {
-      alert('Registered but auto-login failed. Please login manually.');
-      showLogin();
-      return;
-    }
-    window.location.href = 'account.html';
-  } catch (err) {
-    errorEl.textContent = err.message || 'Network error';
-    errorEl.style.display = 'block';
+
+    errorEl.textContent = errorMessage;
+    errorEl.style.display = "block";
   }
 });

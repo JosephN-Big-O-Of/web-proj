@@ -40,14 +40,14 @@ if (!isset($db)) {
     if ($init) {
         // Create users table
         $db->exec("CREATE TABLE users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            password_hash TEXT NOT NULL,
-            age INTEGER,
-            role TEXT DEFAULT 'user',
-            joined_at TEXT
-        );");
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    firebase_uid TEXT UNIQUE,
+    age INTEGER,
+    role TEXT DEFAULT 'user',
+    joined_at TEXT
+);");
 
         // Create events table
         $db->exec("CREATE TABLE events (

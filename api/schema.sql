@@ -1,10 +1,10 @@
--- Schema for Event Finder (MySQL)
+-- Schema for Event Finder (MySQL) - Updated for Firebase
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(191) NOT NULL,
   `email` VARCHAR(191) NOT NULL UNIQUE,
-  `password_hash` VARCHAR(255) NOT NULL,
+  `firebase_uid` VARCHAR(128) UNIQUE,
   `age` INT,
   `role` VARCHAR(50) DEFAULT 'user',
   `joined_at` DATETIME
