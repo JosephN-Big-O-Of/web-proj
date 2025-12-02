@@ -19,14 +19,14 @@ class AdminAuth {
       firebase.auth().onAuthStateChanged(async (firebaseUser) => {
         if (!firebaseUser) {
           // Not logged in - redirect to login
-          window.location.href = "/login. html";
+          window.location.href = "/login.html";
           reject("Not authenticated");
           return;
         }
 
         try {
           // Get user data from our database
-          const response = await fetch("/api/me. php", {
+          const response = await fetch("/api/me.php", {
             headers: {
               "X-Firebase-UID": firebaseUser.uid,
             },
@@ -55,7 +55,7 @@ class AdminAuth {
         } catch (error) {
           console.error("Auth error:", error);
           alert("Authentication error. Please try logging in again.");
-          window.location.href = "/login. html";
+          window.location.href = "/login.html";
           reject(error);
         }
       });
@@ -119,7 +119,7 @@ class AdminAuth {
   requireOwner() {
     if (!this.isOwner) {
       alert("Access denied. Owner privileges required.");
-      window.location.href = "/admin. html";
+      window.location.href = "/admin.html";
       return false;
     }
     return true;
