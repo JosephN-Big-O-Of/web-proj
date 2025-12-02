@@ -2,7 +2,7 @@ import { auth } from "../firebase-config.js";
 import {
   onAuthStateChanged,
   signOut,
-} from "https://www.gstatic.com/firebasejs/10.7. 1/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // Load user profile
 async function loadProfile() {
@@ -18,7 +18,7 @@ async function loadProfile() {
       const idToken = await user.getIdToken();
 
       // Fetch user profile from backend
-      const res = await fetch("../api/me.php", {
+      const res = await fetch("api/me.php", {
         headers: { Authorization: `Bearer ${idToken}` },
       });
 
