@@ -18,7 +18,7 @@ async function loadProfile() {
       const idToken = await user.getIdToken();
 
       // Fetch user profile from backend
-      const res = await fetch("api/me.php", {
+      const res = await fetch("../api/me.php", {
         headers: { Authorization: `Bearer ${idToken}` },
       });
 

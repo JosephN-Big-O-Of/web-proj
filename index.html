@@ -1,4 +1,4 @@
-<! DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -166,8 +166,8 @@
           <a href="favorites.html" id="favorites-link" style="display: none"
             >Favorites</a
           >
-          <a href="profile.html" id="profile-link" style="display: none"
-            >Profile</a
+          <a href="account.html" id="profile-link" style="display: none"
+            >Account</a
           >
           <a href="admin.html" id="admin-link" style="display: none">Admin</a>
         </nav>
@@ -275,11 +275,11 @@
     </footer>
 
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-auth-compat.js"></script>
-    <script src="/firebase-config.js"></script>
+    <!-- Firebase ES6 Module -->
+    <script type="module">
+      import { auth } from "/web-proj/firebase-config.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    <script>
       let allEvents = [];
       let allGenres = [];
       let userFavorites = [];
@@ -290,7 +290,7 @@
       // Initialize
       window.addEventListener("DOMContentLoaded", async () => {
         // Check authentication
-        firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+        onAuthStateChanged(auth, async (firebaseUser) => {
           if (firebaseUser) {
             await loadCurrentUser(firebaseUser);
             updateUIForLoggedIn();
@@ -314,7 +314,7 @@
       // Load current user
       async function loadCurrentUser(firebaseUser) {
         try {
-          const response = await fetch("/api/me. php", {
+          const response = await fetch("/web-proj/api/me.php", {
             headers: { "X-Firebase-UID": firebaseUser.uid },
           });
           const data = await response.json();
@@ -357,7 +357,7 @@
       // Load genres
       async function loadGenres() {
         try {
-          const response = await fetch("/api/genres.php");
+          const response = await fetch("api/genres.php");
           const data = await response.json();
           if (data.success) {
             allGenres = data.genres;
@@ -377,9 +377,8 @@
           chip.className = "genre-chip";
           chip.dataset.genre = genre.slug;
           chip.innerHTML = `
-                    <span>${genre.icon}</span>
-                    <span>${genre.name}</span>
-                `;
+    <span>${genre.name}</span>
+`;
 
           chip.addEventListener("click", () => {
             selectGenre(genre.slug);
@@ -394,7 +393,7 @@
         selectedGenre = genreSlug;
 
         // Update UI
-        document.querySelectorAll(".genre-chip").forEach((chip) => {
+        document.querySelectorAll(". genre-chip").forEach((chip) => {
           chip.classList.remove("active");
           if (chip.dataset.genre === genreSlug) {
             chip.classList.add("active");
@@ -422,7 +421,7 @@
           '<p class="loading-spinner">⏳ Loading events...</p>';
 
         try {
-          let url = "/api/events.php? ";
+          let url = "/web-proj/api/events.php? ";
           if (selectedGenre) {
             url += `genre=${selectedGenre}&`;
           }
@@ -463,7 +462,7 @@
           const isFavorited = userFavorites.includes(event.id);
           const imageUrl =
             event.image_url ||
-            "https://via.placeholder.com/400x200? text=Event";
+            "https://placehold.co/400x200/667eea/white?text=Event";
           const price =
             event.price > 0 ? `$${parseFloat(event.price).toFixed(2)}` : "FREE";
           const distance = event.distance_km
@@ -474,7 +473,7 @@
                     <div class="event-preview">
                         <img src="${imageUrl}" alt="${
             event.title
-          }" class="event-image" onerror="this.src='https://via.placeholder.com/400x200?text=Event'">
+          }" class="event-image" onerror="this.src='https://placehold.co/400x200/667eea/white?text=Event'">
                         <span class="event-price">${price}</span>
                     </div>
 
@@ -502,12 +501,12 @@
                     </div>
 
                     <div class="card-actions">
-                        <button class="details-btn" onclick="viewEventDetails(${
+                        <button class="details-btn" onclick="window.viewEventDetails(${
                           event.id
                         })">View Details</button>
                         <button class="favorite-btn ${
                           isFavorited ? "favorited" : ""
-                        }" onclick="toggleFavorite(${event.id})" ${
+                        }" onclick="window.toggleFavorite(${event.id})" ${
             currentUser ? "" : "disabled"
           }>
                             ${
@@ -528,8 +527,8 @@
         if (!currentUser) return;
 
         try {
-          const firebaseUser = firebase.auth().currentUser;
-          const response = await fetch("/api/favorites.php", {
+          const firebaseUser = auth.currentUser;
+          const response = await fetch("/web-proj/api/favorites.php", {
             headers: { "X-Firebase-UID": firebaseUser.uid },
           });
           const data = await response.json();
@@ -542,19 +541,20 @@
         }
       }
 
-      // Toggle favorite
-      async function toggleFavorite(eventId) {
+      // Toggle favorite - Export to window so onclick can access it
+      window.toggleFavorite = async function (eventId) {
         if (!currentUser) {
           alert("Please log in to add favorites");
           return;
         }
 
-        const firebaseUser = firebase.auth().currentUser;
+        const firebaseUser = auth.currentUser;
         const isFavorited = userFavorites.includes(eventId);
 
         try {
           const response = await fetch(
-            "/api/favorites.php" + (isFavorited ? `?event_id=${eventId}` : ""),
+            "/web-proj/api/favorites.php" +
+              (isFavorited ? `?event_id=${eventId}` : ""),
             {
               method: isFavorited ? "DELETE" : "POST",
               headers: {
@@ -568,25 +568,23 @@
           const data = await response.json();
 
           if (data.success) {
-            // Update local state
             if (isFavorited) {
               userFavorites = userFavorites.filter((id) => id !== eventId);
             } else {
               userFavorites.push(eventId);
             }
-            // Re-render events
             renderEvents();
           }
         } catch (error) {
           console.error("Failed to toggle favorite:", error);
           alert("Failed to update favorite");
         }
-      }
+      };
 
-      // View event details
-      function viewEventDetails(eventId) {
-        window.location.href = `/event. html?id=${eventId}`;
-      }
+      // View event details - Export to window
+      window.viewEventDetails = function (eventId) {
+        window.location.href = `/web-proj/event.html?id=${eventId}`;
+      };
 
       // Get user location
       function getUserLocation() {
@@ -597,7 +595,7 @@
                 lat: position.coords.latitude,
                 lng: position.coords.longitude,
               };
-              loadEvents(); // Reload with location
+              loadEvents();
             },
             (error) => {
               console.log("Location access denied:", error);
@@ -608,7 +606,6 @@
 
       // Setup event listeners
       function setupEventListeners() {
-        // Filter toggle
         const toggleBtn = document.getElementById("filter-toggle");
         const panel = document.getElementById("filter-panel");
 
