@@ -421,20 +421,58 @@
           '<p class="loading-spinner">⏳ Loading events...</p>';
 
         try {
-          let url = "/web-proj/api/events.php? ";
-          if (selectedGenre) {
-            url += `genre=${selectedGenre}&`;
-          }
-          if (userLocation) {
-            url += `lat=${userLocation.lat}&lng=${userLocation.lng}&radius=50&`;
-          }
+          // Load all events first (unfiltered)
+          const baseUrl = "/web-proj/api/events.php";
+          const resAll = await fetch(baseUrl);
+          const dataAll = await resAll.json();
 
-          const response = await fetch(url);
-          const data = await response.json();
-
-          if (data.success) {
-            allEvents = data.events;
+          if (dataAll && dataAll.success && Array.isArray(dataAll.events)) {
+            allEvents = dataAll.events;
+            document.getElementById("events-heading").textContent =
+              "All Events";
             renderEvents();
+          } else {
+            throw new Error("Failed to load all events");
+          }
+
+          // Build geolocated URL (no leading space; only append params that exist)
+          let url = baseUrl;
+          const qs = new URLSearchParams();
+
+          if (selectedGenre) {
+            qs.append("genre", selectedGenre);
+          }
+          if (
+            userLocation &&
+            typeof userLocation.lat === "number" &&
+            typeof userLocation.lng === "number"
+          ) {
+            qs.append("lat", String(userLocation.lat));
+            qs.append("lng", String(userLocation.lng));
+            qs.append("radius", "50"); // default radius here (client-side)
+          }
+
+          if ([...qs].length > 0) {
+            url = `${baseUrl}?${qs.toString()}`;
+          }
+
+          // Try geolocated fetch; only replace list if results exist
+          const resGeo = await fetch(url);
+          const dataGeo = await resGeo.json();
+
+          if (dataGeo && dataGeo.success && Array.isArray(dataGeo.events)) {
+            if (dataGeo.events.length > 0) {
+              allEvents = dataGeo.events;
+              document.getElementById("events-heading").textContent =
+                "Nearby Events";
+              renderEvents();
+            } else {
+              // Keep the "All Events" render; optionally show info
+              const info = document.createElement("p");
+              info.className = "no-events";
+              info.textContent = "No nearby events found. Showing all events.";
+              container.prepend(info);
+            }
           }
         } catch (error) {
           console.error("Failed to load events:", error);
