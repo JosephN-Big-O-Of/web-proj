@@ -8,10 +8,10 @@ return [
 
     // Database connection settings. If DB_DRIVER is 'mysql' the app will use PDO MySQL.
     'db' => [
-        'driver' => getenv('DB_DRIVER') ?: (getenv('DB_HOST') ? 'mysql' : 'sqlite'),
+        'driver' => 'mysql',
         'host' => getenv('DB_HOST') ?: '127.0.0.1',
         'port' => getenv('DB_PORT') ?: (getenv('DB_DRIVER') === 'mysql' ? '3306' : ''),
-        'name' => getenv('DB_NAME') ?: 'events_db',
+      'name' => getenv('DB_NAME') ?: 'eventfinder',
         'user' => getenv('DB_USER') ?: 'root',
         'pass' => getenv('DB_PASS') ?: '',
         // For SQLite the file path is relative to project and set in db.php

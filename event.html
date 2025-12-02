@@ -1,89 +1,578 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Event details and registration page for Event Finder.">
-    <meta name="author" content="Event Finder Team">
-    <link rel="stylesheet" href="event.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Event details and registration page for Event Finder."
+    />
+    <meta name="author" content="Event Finder Team" />
+    <link rel="stylesheet" href="event.css" />
     <title>Event Details | Event Finder</title>
-</head>
-<body>
+    <style>
+      #event-hero {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        overflow: hidden;
+      }
+
+      #event-main-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      #event-title-box {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        color: white;
+        padding: 40px 20px 20px;
+      }
+
+      #event-title {
+        font-size: 2.5rem;
+        margin: 0 0 10px 0;
+      }
+
+      #event-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .event-genres {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+      }
+
+      .genre-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+      }
+
+      .event-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+
+      .event-info-column {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .event-info-column h3 {
+        color: #667eea;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+      }
+
+      .event-info-column section {
+        margin-bottom: 40px;
+      }
+
+      #info-section ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      #info-section li {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      #info-section li:last-child {
+        border-bottom: none;
+      }
+
+      .ticket-box {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+      }
+
+      .ticket-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0 1);
+        border: 2px solid #667eea;
+      }
+
+      .ticket-card h3 {
+        color: #667eea;
+        margin-bottom: 20px;
+      }
+
+      .ticket-card p {
+        margin: 15px 0;
+        font-size: 1.1rem;
+      }
+
+      .price-display {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+        margin: 20px 0;
+      }
+
+      #register-btn,
+      #favorite-btn {
+        width: 100%;
+        padding: 15px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0 3s;
+      }
+
+      #register-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      #register-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      #favorite-btn {
+        background: white;
+        color: #ff6b6b;
+        border: 2px solid #ff6b6b;
+      }
+
+      #favorite-btn:hover {
+        background: #ff6b6b;
+        color: white;
+      }
+
+      #favorite-btn.favorited {
+        background: #ff6b6b;
+        color: white;
+      }
+
+      #map-container {
+        width: 100%;
+        height: 300px;
+        background: #f0f0f0;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        margin-top: 20px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 100px 20px;
+        color: #999;
+        font-size: 1.5rem;
+      }
+
+      .error-state {
+        text-align: center;
+        padding: 100px 20px;
+      }
+
+      .error-state h2 {
+        color: #ff6b6b;
+        margin-bottom: 15px;
+      }
+
+      .back-btn {
+        display: inline-block;
+        padding: 12px 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        margin-top: 20px;
+        transition: all 0.3s;
+      }
+
+      .back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .creator-info {
+        background: #f8f9ff;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .event-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .ticket-box {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
 
     <!-- HEADER -->
     <header id="navbar">
-        <div class="tm-logo">
-            <a href="index.html">EventFinder</a>
-        </div>
-        <nav class="tm-links">
-            <a href="index.html">Home</a>
-            <a href="favorites.html">Favorites</a>
-            <a href="login.html">Login</a>
-        </nav>
+      <div class="tm-logo">
+        <a href="index.html">EventFinder</a>
+      </div>
+      <nav class="tm-links">
+        <a href="index.html">Home</a>
+        <a href="favorites.html" id="favorites-link">Favorites</a>
+        <a href="profile.html" id="profile-link">Profile</a>
+        <a href="admin.html" id="admin-link" style="display: none">Admin</a>
+      </nav>
     </header>
 
-    <!-- HERO / BANNER -->
-    <section id="event-hero">
-        <img src="placeholder.jpg" alt="Event image" id="event-main-image">
+    <!-- Loading State -->
+    <div id="loading-container" class="loading">
+      <p>⏳ Loading event details...</p>
+    </div>
+
+    <!-- Main Content (hidden until loaded) -->
+    <div id="event-content" style="display: none">
+      <!-- HERO / BANNER -->
+      <section id="event-hero">
+        <img
+          src="https://via.placeholder.com/1200x400? text=Event"
+          alt="Event image"
+          id="event-main-image"
+        />
         <div id="event-title-box">
-            <h2 id="event-title">Sample Event Title</h2>
-            <p id="event-subtitle">Location • Date • Time</p>
+          <h2 id="event-title">Loading...</h2>
+          <p id="event-subtitle">Loading...</p>
+          <div class="event-genres" id="event-genres"></div>
         </div>
-    </section>
+      </section>
 
-    <!-- MAIN CONTENT -->
-    <main id="main-content">
+      <!-- MAIN CONTENT -->
+      <main id="main-content">
         <div class="event-grid">
-            <!-- Left Column -->
-            <div class="event-info-column">
-                <section id="description">
-                    <h3>Description</h3>
-                    <p id="event-description">
-                        This is a placeholder description for the event. The organizer can update it later.
-                    </p>
-                </section>
+          <!-- Left Column -->
+          <div class="event-info-column">
+            <section id="description">
+              <h3>📝 Description</h3>
+              <p id="event-description">Loading description...</p>
+            </section>
 
-                <section id="info-section">
-                    <h3>Event Information</h3>
-                    <ul>
-                        <li><strong>Date:</strong> <span id="info-date">January 1, 2025</span></li>
-                        <li><strong>Time:</strong> <span id="info-time">7:00 PM</span></li>
-                        <li><strong>Location:</strong> <span id="info-location">City Name</span></li>
-                        <li><strong>Price:</strong> <span id="info-price">Free / $20 / etc.</span></li>
-                        <li><strong>Age Restriction:</strong> <span id="info-age">18+</span></li>
-                    </ul>
-                </section>
+            <section id="info-section">
+              <h3>ℹ️ Event Information</h3>
+              <ul>
+                <li><strong>📅 Date:</strong> <span id="info-date">-</span></li>
+                <li><strong>🕐 Time:</strong> <span id="info-time">-</span></li>
+                <li>
+                  <strong>📍 Location:</strong>
+                  <span id="info-location">-</span>
+                </li>
+                <li>
+                  <strong>💰 Price:</strong> <span id="info-price">-</span>
+                </li>
+                <li>
+                  <strong>🔞 Age Restriction:</strong>
+                  <span id="info-age">-</span>
+                </li>
+                <li>
+                  <strong>📊 Status:</strong> <span id="info-status">-</span>
+                </li>
+              </ul>
 
-                <section id="media-section">
-                    <h3>Photos & Media</h3>
-                    <div id="media-gallery">
-                        <img src="placeholder.jpg" alt="Event image">
-                        <img src="placeholder.jpg" alt="Event image">
-                        <div class="video-placeholder">Video Coming Soon</div>
-                    </div>
-                </section>
+              <div class="creator-info" id="creator-info" style="display: none">
+                <strong>👤 Created by:</strong> <span id="creator-name">-</span
+                ><br />
+                <small>Posted on <span id="created-date">-</span></small>
+              </div>
+            </section>
+
+            <section id="location-section">
+              <h3>🗺️ Location</h3>
+              <div id="map-container">
+                <p>Map integration coming soon</p>
+              </div>
+            </section>
+          </div>
+
+          <!-- Right Column -->
+          <aside class="ticket-box">
+            <div class="ticket-card">
+              <h3>🎟️ Tickets & Registration</h3>
+              <div class="price-display" id="ticket-price">$0. 00</div>
+              <p id="ticket-info">Get your tickets now!</p>
+              <button id="register-btn">🎫 Register Now</button>
+              <button id="favorite-btn">♡ Add to Favorites</button>
             </div>
-
-            <!-- Right Column -->
-            <aside class="ticket-box">
-                <div class="ticket-card">
-                    <h3>Tickets & Registration</h3>
-                    <p><strong>Price:</strong> Free / $20 / VIP</p>
-                    <p><strong>Available Seats:</strong> 120</p>
-                    <button id="register-btn">Register</button>
-                    <button id="favorite-btn">♡ Add to Favorites</button>
-                </div>
-            </aside>
+          </aside>
         </div>
-    </main>
+      </main>
+    </div>
 
     <!-- FOOTER -->
     <footer>
-        <p>© 2025 Event Finder</p>
-        <p class="disclaimer">Disclaimer: This site is for educational/demo purposes only. Do not use for production.</p>
-        <p class="ai-disclosure">AI-assistance: Some content may have been generated or assisted using AI tools — see <a href="README.md">README</a>.</p>
-        <p class="last-updated">Last updated: 2025-11-25</p>
+      <p>© 2025 Event Finder</p>
+      <p class="disclaimer">Discover amazing events near you.</p>
     </footer>
-</body>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-auth-compat.js"></script>
+    <script src="/firebase-config.js"></script>
+
+    <script>
+      let currentUser = null;
+      let currentEvent = null;
+      let isFavorited = false;
+
+      // Get event ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const eventId = urlParams.get("id");
+
+      if (!eventId) {
+        showError("No event ID provided");
+      }
+
+      // Initialize
+      window.addEventListener("DOMContentLoaded", async () => {
+        // Check authentication
+        firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+          if (firebaseUser) {
+            await loadCurrentUser(firebaseUser);
+            updateUIForLoggedIn();
+            await checkIfFavorited();
+          }
+        });
+
+        // Load event details
+        await loadEvent();
+      });
+
+      // Load current user
+      async function loadCurrentUser(firebaseUser) {
+        try {
+          const response = await fetch("/api/me. php", {
+            headers: { "X-Firebase-UID": firebaseUser.uid },
+          });
+          const data = await response.json();
+          if (data.user) {
+            currentUser = data.user;
+          }
+        } catch (error) {
+          console.error("Failed to load user:", error);
+        }
+      }
+
+      // Update UI for logged in user
+      function updateUIForLoggedIn() {
+        if (currentUser && ["admin", "owner"].includes(currentUser.role)) {
+          document.getElementById("admin-link").style.display = "block";
+        }
+      }
+
+      // Load event details
+      async function loadEvent() {
+        try {
+          const response = await fetch(`/api/events. php?id=${eventId}`);
+          const data = await response.json();
+
+          if (data.success && data.event) {
+            currentEvent = data.event;
+            renderEvent();
+          } else {
+            showError("Event not found");
+          }
+        } catch (error) {
+          console.error("Failed to load event:", error);
+          showError("Failed to load event details");
+        }
+      }
+
+      // Render event details
+      function renderEvent() {
+        const event = currentEvent;
+
+        // Hide loading, show content
+        document.getElementById("loading-container").style.display = "none";
+        document.getElementById("event-content").style.display = "block";
+
+        // Hero section
+        const imageUrl =
+          event.image_url || "https://via. placeholder.com/1200x400?text=Event";
+        document.getElementById("event-main-image").src = imageUrl;
+        document.getElementById("event-title").textContent = event.title;
+        document.getElementById("event-subtitle").textContent = `${
+          event.location || "Location TBA"
+        } • ${event.date || "Date TBA"} ${event.time ? "• " + event.time : ""}`;
+
+        // Genres
+        const genresContainer = document.getElementById("event-genres");
+        genresContainer.innerHTML = "";
+        (event.genre_icons || []).forEach((icon, i) => {
+          const badge = document.createElement("span");
+          badge.className = "genre-badge";
+          badge.innerHTML = `<span>${icon}</span><span>${event.genres[i]}</span>`;
+          genresContainer.appendChild(badge);
+        });
+
+        // Description
+        document.getElementById("event-description").textContent =
+          event.description || "No description provided. ";
+
+        // Event info
+        document.getElementById("info-date").textContent = event.date || "TBA";
+        document.getElementById("info-time").textContent = event.time || "TBA";
+        document.getElementById("info-location").textContent =
+          event.location || "TBA";
+        const price =
+          event.price > 0 ? `$${parseFloat(event.price).toFixed(2)}` : "FREE";
+        document.getElementById("info-price").textContent = price;
+        document.getElementById("info-age").textContent = event.age_restriction
+          ? `${event.age_restriction}+`
+          : "All ages";
+        document.getElementById("info-status").textContent =
+          event.status || "Published";
+
+        // Creator info
+        if (event.creator_name) {
+          document.getElementById("creator-info").style.display = "block";
+          document.getElementById("creator-name").textContent =
+            event.creator_name;
+          document.getElementById("created-date").textContent = new Date(
+            event.created_at
+          ).toLocaleDateString();
+        }
+
+        // Ticket card
+        document.getElementById("ticket-price").textContent = price;
+        document.getElementById("ticket-info").textContent =
+          event.price > 0
+            ? "Purchase your tickets today!"
+            : "Free entry - Register to attend!";
+
+        // Setup buttons
+        document
+          .getElementById("register-btn")
+          .addEventListener("click", () => {
+            alert("Registration functionality coming soon!");
+          });
+
+        document
+          .getElementById("favorite-btn")
+          .addEventListener("click", toggleFavorite);
+
+        // Update page title
+        document.title = `${event.title} | Event Finder`;
+      }
+
+      // Check if event is favorited
+      async function checkIfFavorited() {
+        if (!currentUser || !eventId) return;
+
+        try {
+          const firebaseUser = firebase.auth().currentUser;
+          const response = await fetch("/api/favorites.php", {
+            headers: { "X-Firebase-UID": firebaseUser.uid },
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            const favoriteIds = data.favorites.map((f) => f.id);
+            isFavorited = favoriteIds.includes(parseInt(eventId));
+            updateFavoriteButton();
+          }
+        } catch (error) {
+          console.error("Failed to check favorites:", error);
+        }
+      }
+
+      // Update favorite button
+      function updateFavoriteButton() {
+        const btn = document.getElementById("favorite-btn");
+        if (isFavorited) {
+          btn.textContent = "❤️ Favorited";
+          btn.classList.add("favorited");
+        } else {
+          btn.textContent = "♡ Add to Favorites";
+          btn.classList.remove("favorited");
+        }
+      }
+
+      // Toggle favorite
+      async function toggleFavorite() {
+        if (!currentUser) {
+          alert("Please log in to add favorites");
+          window.location.href = "/login. html";
+          return;
+        }
+
+        const firebaseUser = firebase.auth().currentUser;
+
+        try {
+          const response = await fetch(
+            "/api/favorites.php" + (isFavorited ? `?event_id=${eventId}` : ""),
+            {
+              method: isFavorited ? "DELETE" : "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Firebase-UID": firebaseUser.uid,
+              },
+              body: isFavorited
+                ? null
+                : JSON.stringify({ event_id: parseInt(eventId) }),
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.success) {
+            isFavorited = !isFavorited;
+            updateFavoriteButton();
+          } else {
+            alert(
+              "Failed to update favorite: " + (data.error || "Unknown error")
+            );
+          }
+        } catch (error) {
+          console.error("Failed to toggle favorite:", error);
+          alert("Failed to update favorite");
+        }
+      }
+
+      // Show error
+      function showError(message) {
+        document.getElementById("loading-container").innerHTML = `
+                <div class="error-state">
+                    <h2>⚠️ Error</h2>
+                    <p>${message}</p>
+                    <a href="/" class="back-btn">Go Back Home</a>
+                </div>
+            `;
+      }
+    </script>
+  </body>
 </html>

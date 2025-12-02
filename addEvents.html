@@ -1,87 +1,420 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin — Add Event</title>
-    <link rel="stylesheet" href="event-add.css">
-</head>
+    <link rel="stylesheet" href="event-add.css" />
+    <style>
+      /* Genre selection styles */
+      .genre-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
 
-<body>
+      .genre-option {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0 3s;
+      }
 
+      .genre-option:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+      }
+
+      .genre-option input[type="checkbox"] {
+        margin-right: 8px;
+      }
+
+      .genre-option.selected {
+        border-color: #667eea;
+        background: #f0f3ff;
+      }
+
+      .genre-icon {
+        margin-right: 5px;
+        font-size: 1.2em;
+      }
+
+      .status-selection {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+      }
+
+      .status-option {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s;
+      }
+
+      .status-option:hover {
+        border-color: #667eea;
+      }
+
+      .status-option input[type="radio"] {
+        margin-right: 8px;
+      }
+
+      .status-option.selected {
+        border-color: #667eea;
+        background: #f0f3ff;
+      }
+
+      .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .alert.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+    </style>
+  </head>
+
+  <body>
     <aside class="sidebar">
-        <h2 class="logo">Eventify Admin</h2>
-            <nav>
-            <a class="nav-link" href="admin.html">Admin profile</a>
-            <a class="nav-link" href="admin-users.html">Admin Users</a>
-            <a class="nav-link" href="add-events.html">Add Events</a>          
-            <a class="nav-link" href="edit-events.html">Edit Events</a>
-            <a class="nav-link" href="index.html">Home</a>
-        </nav>
+      <h2 class="logo">Eventify Admin</h2>
+      <nav>
+        <a class="nav-link" href="admin.html">Admin profile</a>
+        <a class="nav-link" href="admin-users. html" data-require-owner
+          >Admin Users</a
+        >
+        <a class="nav-link active" href="addEvents.html">Add Events</a>
+        <a class="nav-link" href="edit-events. html">Edit Events</a>
+        <a class="nav-link" href="index.html">Home</a>
+      </nav>
     </aside>
 
     <main class="content">
-        <header class="page-header">
-            <h1>Add New Event</h1>
-            <p>Fill out the form to create and publish a new event.</p>
-        </header>
+      <header class="page-header">
+        <h1>Add New Event</h1>
+        <p>Fill out the form to create and publish a new event.</p>
+      </header>
 
-        <section class="form-wrapper">
-            <form id="add-event-form">
-                
-                <div class="input-group">
-                    <label>Event Title</label>
-                    <input type="text" required>
-                </div>
+      <div id="alert-container"></div>
 
-                <div class="input-group">
-                    <label>Description</label>
-                    <textarea rows="5" required></textarea>
-                </div>
+      <section class="form-wrapper">
+        <form id="add-event-form">
+          <div class="input-group">
+            <label>Event Title *</label>
+            <input type="text" id="title" name="title" required />
+          </div>
 
-                <div class="form-row">
-                    <div class="input-group">
-                        <label>Date</label>
-                        <input type="date" required>
-                    </div>
+          <div class="input-group">
+            <label>Description *</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="5"
+              required
+            ></textarea>
+          </div>
 
-                    <div class="input-group">
-                        <label>Time</label>
-                        <input type="time" required>
-                    </div>
-                </div>
+          <div class="input-group">
+            <label>Genres *</label>
+            <div id="genre-selection" class="genre-selection">
+              <!-- Genres will be loaded here -->
+              <p>Loading genres...</p>
+            </div>
+          </div>
 
-                <div class="input-group">
-                    <label>Location</label>
-                    <input type="text" required>
-                </div>
+          <div class="form-row">
+            <div class="input-group">
+              <label>Date *</label>
+              <input type="date" id="date" name="date" required />
+            </div>
 
-                <div class="form-row">
-                    <div class="input-group">
-                        <label>Age Restriction</label>
-                        <input type="number" min="0">
-                    </div>
+            <div class="input-group">
+              <label>Time *</label>
+              <input type="time" id="time" name="time" required />
+            </div>
+          </div>
 
-                    <div class="input-group">
-                        <label>Ticket Price ($)</label>
-                        <input type="number" min="0" step="0.01">
-                    </div>
-                </div>
+          <div class="input-group">
+            <label>Location *</label>
+            <input type="text" id="location" name="location" required />
+          </div>
 
-                <div class="input-group">
-                    <label>Media Uploads</label>
-                    <input type="file" multiple>
-                </div>
+          <div class="form-row">
+            <div class="input-group">
+              <label>Latitude (optional)</label>
+              <input
+                type="number"
+                id="lat"
+                name="lat"
+                step="0.000001"
+                min="-90"
+                max="90"
+              />
+            </div>
 
-                <button type="submit" class="submit-btn">Add Event</button>
-            </form>
-        </section>
+            <div class="input-group">
+              <label>Longitude (optional)</label>
+              <input
+                type="number"
+                id="lng"
+                name="lng"
+                step="0.000001"
+                min="-180"
+                max="180"
+              />
+            </div>
+          </div>
 
-        <footer class="footer">
-            <p>© 2025 Eventify Admin — Development Mode</p>
-        </footer>
+          <div class="form-row">
+            <div class="input-group">
+              <label>Age Restriction</label>
+              <input
+                type="number"
+                id="age_restriction"
+                name="age_restriction"
+                min="0"
+                placeholder="0 = All ages"
+              />
+            </div>
 
+            <div class="input-group">
+              <label>Ticket Price ($)</label>
+              <input
+                type="number"
+                id="price"
+                name="price"
+                min="0"
+                step="0.01"
+                placeholder="0. 00"
+              />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Image URL (optional)</label>
+            <input
+              type="url"
+              id="image_url"
+              name="image_url"
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+
+          <div class="input-group">
+            <label>Status</label>
+            <div class="status-selection">
+              <label class="status-option selected">
+                <input type="radio" name="status" value="published" checked />
+                <span>📢 Published</span>
+              </label>
+              <label class="status-option">
+                <input type="radio" name="status" value="draft" />
+                <span>📝 Draft</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submit-btn">
+            <span id="btn-text">Add Event</span>
+            <span id="btn-loader" style="display: none">⏳ Creating... </span>
+          </button>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <p>© 2025 Eventify Admin — Development Mode</p>
+      </footer>
     </main>
 
-</body>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-auth-compat.js"></script>
+    <script src="/firebase-config. js"></script>
+    <script src="/scripts/admin-auth. js"></script>
+
+    <script>
+      let availableGenres = [];
+
+      // Initialize admin authentication
+      adminAuth
+        .init()
+        .then((user) => {
+          console.log("Admin authenticated:", user);
+          loadGenres();
+        })
+        .catch((error) => {
+          console.error("Auth failed:", error);
+        });
+
+      // Load available genres
+      async function loadGenres() {
+        try {
+          const response = await fetch("/api/genres. php");
+          const data = await response.json();
+
+          if (data.success) {
+            availableGenres = data.genres;
+            renderGenres();
+          }
+        } catch (error) {
+          console.error("Failed to load genres:", error);
+          showAlert("Failed to load genres", "error");
+        }
+      }
+
+      // Render genre checkboxes
+      function renderGenres() {
+        const container = document.getElementById("genre-selection");
+        container.innerHTML = "";
+
+        availableGenres.forEach((genre) => {
+          const label = document.createElement("label");
+          label.className = "genre-option";
+          label.innerHTML = `
+                    <input type="checkbox" name="genres[]" value="${genre.id}">
+                    <span class="genre-icon">${genre.icon}</span>
+                    <span>${genre.name}</span>
+                `;
+
+          // Toggle selected class
+          label.addEventListener("click", function () {
+            this.classList.toggle("selected");
+          });
+
+          container.appendChild(label);
+        });
+      }
+
+      // Handle status radio button styling
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".status-option").forEach((option) => {
+          option.addEventListener("click", function () {
+            document
+              .querySelectorAll(".status-option")
+              .forEach((o) => o.classList.remove("selected"));
+            this.classList.add("selected");
+          });
+        });
+      });
+
+      // Handle form submission
+      document
+        .getElementById("add-event-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById("submit-btn");
+          const btnText = document.getElementById("btn-text");
+          const btnLoader = document.getElementById("btn-loader");
+
+          // Disable button
+          submitBtn.disabled = true;
+          btnText.style.display = "none";
+          btnLoader.style.display = "inline";
+
+          // Collect form data
+          const formData = {
+            title: document.getElementById("title").value,
+            description: document.getElementById("description").value,
+            date: document.getElementById("date").value,
+            time: document.getElementById("time").value,
+            location: document.getElementById("location").value,
+            lat: document.getElementById("lat").value || null,
+            lng: document.getElementById("lng").value || null,
+            age_restriction:
+              document.getElementById("age_restriction").value || null,
+            price: document.getElementById("price").value || 0,
+            image_url: document.getElementById("image_url").value || null,
+            status: document.querySelector('input[name="status"]:checked')
+              .value,
+            genres: [],
+          };
+
+          // Collect selected genres
+          document
+            .querySelectorAll('input[name="genres[]"]:checked')
+            .forEach((checkbox) => {
+              formData.genres.push(parseInt(checkbox.value));
+            });
+
+          // Validate at least one genre selected
+          if (formData.genres.length === 0) {
+            showAlert("Please select at least one genre", "error");
+            submitBtn.disabled = false;
+            btnText.style.display = "inline";
+            btnLoader.style.display = "none";
+            return;
+          }
+
+          try {
+            const response = await adminAuth.apiRequest(
+              "/api/admin/events.php",
+              {
+                method: "POST",
+                body: JSON.stringify(formData),
+              }
+            );
+
+            const data = await response.json();
+
+            if (data.success) {
+              showAlert("Event created successfully!  ", "success");
+              // Reset form after 2 seconds
+              setTimeout(() => {
+                document.getElementById("add-event-form").reset();
+                document
+                  .querySelectorAll(".genre-option")
+                  .forEach((o) => o.classList.remove("selected"));
+                document
+                  .querySelectorAll(".status-option")[0]
+                  .classList.add("selected");
+              }, 2000);
+            } else {
+              showAlert(data.error || "Failed to create event", "error");
+            }
+          } catch (error) {
+            console.error("Error creating event:", error);
+            showAlert("Failed to create event.  Please try again.", "error");
+          } finally {
+            submitBtn.disabled = false;
+            btnText.style.display = "inline";
+            btnLoader.style.display = "none";
+          }
+        });
+
+      // Show alert message
+      function showAlert(message, type) {
+        const container = document.getElementById("alert-container");
+        const alert = document.createElement("div");
+        alert.className = `alert ${type}`;
+        alert.textContent = message;
+        container.innerHTML = "";
+        container.appendChild(alert);
+        alert.style.display = "block";
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          alert.style.display = "none";
+        }, 5000);
+      }
+    </script>
+  </body>
 </html>

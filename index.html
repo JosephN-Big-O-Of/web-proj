@@ -1,160 +1,682 @@
-<!DOCTYPE html>
+<! DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Finder | Home</title>
-    <meta name="description" content="Discover concerts, festivals, shows, and more near you.">
-    <link rel="stylesheet" href="index.css">
-</head>
+    <meta
+      name="description"
+      content="Discover concerts, festivals, shows, and more near you."
+    />
+    <link rel="stylesheet" href="index.css" />
+    <style>
+      /* Genre filter chips */
+      .genre-filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 20px 0;
+        justify-content: center;
+      }
 
-<body>
+      .genre-chip {
+        padding: 10px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 25px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
+      .genre-chip:hover {
+        border-color: #667eea;
+        background: #f0f3ff;
+        transform: translateY(-2px);
+      }
+
+      .genre-chip.active {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      /* Event cards enhancement */
+      .event-card {
+        position: relative;
+      }
+
+      .event-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .event-price {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .event-genres {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin: 10px 0;
+      }
+
+      .event-genre-tag {
+        background: #f0f0f0;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .favorite-btn {
+        transition: all 0.3s;
+      }
+
+      .favorite-btn.favorited {
+        background: #ff6b6b;
+        color: white;
+      }
+
+      .favorite-btn.favorited:hover {
+        background: #ff5252;
+      }
+
+      .loading-spinner {
+        text-align: center;
+        padding: 60px;
+        color: #999;
+        font-size: 1.2rem;
+      }
+
+      .no-events {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+      }
+
+      .event-distance {
+        color: #667eea;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      /* User menu */
+      .user-menu {
+        position: relative;
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .admin-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ff6b6b;
+        color: white;
+        font-size: 0.6rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
 
     <!-- HEADER / NAV -->
- <header class="tm-navbar">
-    <div class="tm-nav-content">
-
+    <header class="tm-navbar">
+      <div class="tm-nav-content">
         <!-- LOGO -->
         <div class="tm-logo">
-            <a href="index.html">EventFinder</a>
+          <a href="index. html">EventFinder</a>
         </div>
 
         <!-- NAV LINKS -->
         <nav class="tm-links">
-            <a href="index.html" class="active">Home</a>
-            <a href="favorites.html">Favorites</a>
-            <a href="profile.html">Profile</a>
+          <a href="index.html" class="active">Home</a>
+          <a href="favorites.html" id="favorites-link" style="display: none"
+            >Favorites</a
+          >
+          <a href="profile.html" id="profile-link" style="display: none"
+            >Profile</a
+          >
+          <a href="admin.html" id="admin-link" style="display: none">Admin</a>
         </nav>
 
         <!-- SEARCH -->
         <div class="tm-search">
-            <input type="text" placeholder="Search events..." />
-            <button><span>Search</span></button>
+          <input
+            type="text"
+            id="header-search"
+            placeholder="Search events..."
+          />
+          <button id="header-search-btn"><span>Search</span></button>
         </div>
 
-        <!-- LOGIN -->
+        <!-- AUTH -->
         <div class="tm-auth">
-            <a href="login.html" class="tm-login-btn">Login</a>
+          <a href="login.html" class="tm-login-btn" id="login-btn">Login</a>
+          <div class="user-menu" id="user-menu" style="display: none">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="admin-badge" id="admin-badge" style="display: none">
+              ADMIN
+            </div>
+          </div>
         </div>
-
-    </div>
-</header>
-
+      </div>
+    </header>
 
     <!-- MAIN -->
     <main id="main-content">
+      <!-- HERO -->
+      <section id="hero">
+        <h2>Find Events Near You</h2>
+        <p>Concerts • Sports • Festivals • Workshops • And More</p>
 
-        <!-- HERO -->
-        <section id="hero">
-            <h2>Find Events Near You</h2>
-            <p>Concerts • Sports • Festivals • Workshops • And More</p>
+        <div class="search-bar">
+          <input type="text" id="search-input" placeholder="Search events..." />
+          <button id="search-btn">Search</button>
+        </div>
+      </section>
 
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Search events...">
-                <button id="search-btn">Search</button>
-            </div>
-        </section>
+      <!-- GENRE FILTERS -->
+      <section id="genre-section">
+        <div class="genre-filters" id="genre-filters">
+          <div class="genre-chip active" data-genre="">
+            <span>🎉</span>
+            <span>All Events</span>
+          </div>
+          <!-- Genres loaded dynamically -->
+        </div>
+      </section>
 
+      <!-- FILTERS -->
       <section id="filters">
-    <!-- Filter Toggle Button -->
-    <button id="filter-toggle" type="button" aria-expanded="false">
-        Show Filters ▾
-    </button>
+        <button id="filter-toggle" type="button" aria-expanded="false">
+          Advanced Filters ▾
+        </button>
 
-    <!-- Filter Panel (Hidden by default) -->
-    <div id="filter-panel" class="collapsed">
-        <form id="filter-form">
-
+        <div id="filter-panel" class="collapsed">
+          <form id="filter-form">
             <div class="filter-group">
-                <label for="filter-date">Date</label>
-                <input type="date" id="filter-date">
+              <label for="filter-date">Date</label>
+              <input type="date" id="filter-date" />
             </div>
 
             <div class="filter-group">
-                <label for="filter-time">Time</label>
-                <input type="time" id="filter-time">
+              <label for="filter-location">Location</label>
+              <input
+                type="text"
+                id="filter-location"
+                placeholder="City or venue"
+              />
             </div>
 
             <div class="filter-group">
-                <label for="filter-location">Location</label>
-                <input type="text" id="filter-location" placeholder="City or venue">
-            </div>
-
-            <div class="filter-group">
-                <label for="filter-interest">Category</label>
-                <select id="filter-interest">
-                    <option value="">All</option>
-                    <option value="music">Music</option>
-                    <option value="sports">Sports</option>
-                    <option value="tech">Tech</option>
-                    <option value="art">Art</option>
-                    <option value="food">Food</option>
-                </select>
+              <label for="filter-radius">Radius (km)</label>
+              <input
+                type="number"
+                id="filter-radius"
+                placeholder="10"
+                min="1"
+                max="100"
+              />
             </div>
 
             <button type="submit" id="apply-filters-btn">Apply Filters</button>
-        </form>
-    </div>
-</section>
+            <button type="button" id="clear-filters-btn">Clear Filters</button>
+          </form>
+        </div>
+      </section>
 
+      <!-- EVENTS -->
+      <section id="events-section">
+        <h3 id="events-heading">All Events</h3>
 
-        <!-- EVENTS -->
-        <section id="events-section">
-
-            <h3>Events Near You</h3>
-
-            <div id="events-container">
-
-                <div class="event-card">
-
-                    <div class="event-preview">
-                        <img src="placeholder.jpg" alt="Event">
-                    </div>
-
-                    <h4>Sample Event Title</h4>
-                    <p class="event-info">Beirut • Jan 5 • 7:00 PM</p>
-
-                    <div class="card-actions">
-                        <button class="details-btn">View Details</button>
-                        <button class="favorite-btn">♡ Add to Favorites</button>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
+        <div id="events-container" class="loading-spinner">
+          <p>⏳ Loading events...</p>
+        </div>
+      </section>
     </main>
 
     <!-- FOOTER -->
     <footer>
-        <p>© 2025 Event Finder</p>
-        <p class="disclaimer">Demo only — data may be fictional.</p>
+      <p>© 2025 Event Finder</p>
+      <p class="disclaimer">Discover amazing events near you.</p>
     </footer>
 
-    <!-- COLLAPSE SCRIPT -->
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-auth-compat.js"></script>
+    <script src="/firebase-config.js"></script>
+
     <script>
-        const toggleBtn = document.getElementById('filter-toggle');
-        const panel = document.getElementById('filter-panel');
+      let allEvents = [];
+      let allGenres = [];
+      let userFavorites = [];
+      let currentUser = null;
+      let selectedGenre = "";
+      let userLocation = null;
 
-        toggleBtn.addEventListener('click', () => {
-            const open = panel.classList.contains('expanded');
-
-            if (open) {
-                panel.classList.remove('expanded');
-                panel.classList.add('collapsed');
-                toggleBtn.innerText = "Filters ▾";
-                toggleBtn.setAttribute("aria-expanded", "false");
-            } else {
-                panel.classList.remove('collapsed');
-                panel.classList.add('expanded');
-                toggleBtn.innerText = "Filters ▴";
-                toggleBtn.setAttribute("aria-expanded", "true");
-            }
+      // Initialize
+      window.addEventListener("DOMContentLoaded", async () => {
+        // Check authentication
+        firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+          if (firebaseUser) {
+            await loadCurrentUser(firebaseUser);
+            updateUIForLoggedIn();
+            await loadFavorites();
+          } else {
+            updateUIForLoggedOut();
+          }
         });
-    </script>
 
-</body>
+        // Load genres and events
+        await loadGenres();
+        await loadEvents();
+
+        // Try to get user location
+        getUserLocation();
+
+        // Setup event listeners
+        setupEventListeners();
+      });
+
+      // Load current user
+      async function loadCurrentUser(firebaseUser) {
+        try {
+          const response = await fetch("/api/me. php", {
+            headers: { "X-Firebase-UID": firebaseUser.uid },
+          });
+          const data = await response.json();
+          if (data.user) {
+            currentUser = data.user;
+          }
+        } catch (error) {
+          console.error("Failed to load user:", error);
+        }
+      }
+
+      // Update UI for logged in user
+      function updateUIForLoggedIn() {
+        document.getElementById("login-btn").style.display = "none";
+        document.getElementById("user-menu").style.display = "block";
+        document.getElementById("favorites-link").style.display = "block";
+        document.getElementById("profile-link").style.display = "block";
+
+        if (currentUser) {
+          const avatar = document.getElementById("user-avatar");
+          avatar.textContent = currentUser.name.charAt(0).toUpperCase();
+
+          // Show admin link if admin or owner
+          if (["admin", "owner"].includes(currentUser.role)) {
+            document.getElementById("admin-link").style.display = "block";
+            document.getElementById("admin-badge").style.display = "block";
+          }
+        }
+      }
+
+      // Update UI for logged out user
+      function updateUIForLoggedOut() {
+        document.getElementById("login-btn").style.display = "block";
+        document.getElementById("user-menu").style.display = "none";
+        document.getElementById("favorites-link").style.display = "none";
+        document.getElementById("profile-link").style.display = "none";
+        document.getElementById("admin-link").style.display = "none";
+      }
+
+      // Load genres
+      async function loadGenres() {
+        try {
+          const response = await fetch("/api/genres.php");
+          const data = await response.json();
+          if (data.success) {
+            allGenres = data.genres;
+            renderGenreFilters();
+          }
+        } catch (error) {
+          console.error("Failed to load genres:", error);
+        }
+      }
+
+      // Render genre filter chips
+      function renderGenreFilters() {
+        const container = document.getElementById("genre-filters");
+
+        allGenres.forEach((genre) => {
+          const chip = document.createElement("div");
+          chip.className = "genre-chip";
+          chip.dataset.genre = genre.slug;
+          chip.innerHTML = `
+                    <span>${genre.icon}</span>
+                    <span>${genre.name}</span>
+                `;
+
+          chip.addEventListener("click", () => {
+            selectGenre(genre.slug);
+          });
+
+          container.appendChild(chip);
+        });
+      }
+
+      // Select genre filter
+      function selectGenre(genreSlug) {
+        selectedGenre = genreSlug;
+
+        // Update UI
+        document.querySelectorAll(".genre-chip").forEach((chip) => {
+          chip.classList.remove("active");
+          if (chip.dataset.genre === genreSlug) {
+            chip.classList.add("active");
+          }
+        });
+
+        // Update heading
+        if (genreSlug) {
+          const genre = allGenres.find((g) => g.slug === genreSlug);
+          document.getElementById(
+            "events-heading"
+          ).textContent = `${genre.icon} ${genre.name} Events`;
+        } else {
+          document.getElementById("events-heading").textContent = "All Events";
+        }
+
+        // Reload events
+        loadEvents();
+      }
+
+      // Load events
+      async function loadEvents() {
+        const container = document.getElementById("events-container");
+        container.innerHTML =
+          '<p class="loading-spinner">⏳ Loading events...</p>';
+
+        try {
+          let url = "/api/events.php? ";
+          if (selectedGenre) {
+            url += `genre=${selectedGenre}&`;
+          }
+          if (userLocation) {
+            url += `lat=${userLocation.lat}&lng=${userLocation.lng}&radius=50&`;
+          }
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            allEvents = data.events;
+            renderEvents();
+          }
+        } catch (error) {
+          console.error("Failed to load events:", error);
+          container.innerHTML =
+            '<div class="no-events"><h3>Failed to load events</h3><p>Please try again later.</p></div>';
+        }
+      }
+
+      // Render events
+      function renderEvents() {
+        const container = document.getElementById("events-container");
+
+        if (allEvents.length === 0) {
+          container.innerHTML =
+            '<div class="no-events"><h3>No events found</h3><p>Try different filters or check back later! </p></div>';
+          return;
+        }
+
+        container.innerHTML = "";
+
+        allEvents.forEach((event) => {
+          const card = document.createElement("div");
+          card.className = "event-card";
+
+          const isFavorited = userFavorites.includes(event.id);
+          const imageUrl =
+            event.image_url ||
+            "https://via.placeholder.com/400x200? text=Event";
+          const price =
+            event.price > 0 ? `$${parseFloat(event.price).toFixed(2)}` : "FREE";
+          const distance = event.distance_km
+            ? `📍 ${event.distance_km} km away`
+            : "";
+
+          card.innerHTML = `
+                    <div class="event-preview">
+                        <img src="${imageUrl}" alt="${
+            event.title
+          }" class="event-image" onerror="this.src='https://via.placeholder.com/400x200?text=Event'">
+                        <span class="event-price">${price}</span>
+                    </div>
+
+                    <h4>${event.title}</h4>
+                    <p class="event-info">📍 ${event.location} • 📅 ${
+            event.date
+          } ${event.time ? "• 🕐 " + event.time : ""}</p>
+                    ${
+                      distance
+                        ? `<p class="event-distance">${distance}</p>`
+                        : ""
+                    }
+                    
+                    <div class="event-genres">
+                        ${(event.genre_icons || [])
+                          .map(
+                            (icon, i) => `
+                            <span class="event-genre-tag">
+                                <span>${icon}</span>
+                                <span>${event.genres[i]}</span>
+                            </span>
+                        `
+                          )
+                          .join("")}
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="details-btn" onclick="viewEventDetails(${
+                          event.id
+                        })">View Details</button>
+                        <button class="favorite-btn ${
+                          isFavorited ? "favorited" : ""
+                        }" onclick="toggleFavorite(${event.id})" ${
+            currentUser ? "" : "disabled"
+          }>
+                            ${
+                              isFavorited
+                                ? "❤️ Favorited"
+                                : "♡ Add to Favorites"
+                            }
+                        </button>
+                    </div>
+                `;
+
+          container.appendChild(card);
+        });
+      }
+
+      // Load user favorites
+      async function loadFavorites() {
+        if (!currentUser) return;
+
+        try {
+          const firebaseUser = firebase.auth().currentUser;
+          const response = await fetch("/api/favorites.php", {
+            headers: { "X-Firebase-UID": firebaseUser.uid },
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            userFavorites = data.favorites.map((f) => f.id);
+          }
+        } catch (error) {
+          console.error("Failed to load favorites:", error);
+        }
+      }
+
+      // Toggle favorite
+      async function toggleFavorite(eventId) {
+        if (!currentUser) {
+          alert("Please log in to add favorites");
+          return;
+        }
+
+        const firebaseUser = firebase.auth().currentUser;
+        const isFavorited = userFavorites.includes(eventId);
+
+        try {
+          const response = await fetch(
+            "/api/favorites.php" + (isFavorited ? `?event_id=${eventId}` : ""),
+            {
+              method: isFavorited ? "DELETE" : "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Firebase-UID": firebaseUser.uid,
+              },
+              body: isFavorited ? null : JSON.stringify({ event_id: eventId }),
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Update local state
+            if (isFavorited) {
+              userFavorites = userFavorites.filter((id) => id !== eventId);
+            } else {
+              userFavorites.push(eventId);
+            }
+            // Re-render events
+            renderEvents();
+          }
+        } catch (error) {
+          console.error("Failed to toggle favorite:", error);
+          alert("Failed to update favorite");
+        }
+      }
+
+      // View event details
+      function viewEventDetails(eventId) {
+        window.location.href = `/event. html?id=${eventId}`;
+      }
+
+      // Get user location
+      function getUserLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+              };
+              loadEvents(); // Reload with location
+            },
+            (error) => {
+              console.log("Location access denied:", error);
+            }
+          );
+        }
+      }
+
+      // Setup event listeners
+      function setupEventListeners() {
+        // Filter toggle
+        const toggleBtn = document.getElementById("filter-toggle");
+        const panel = document.getElementById("filter-panel");
+
+        toggleBtn.addEventListener("click", () => {
+          const open = panel.classList.contains("expanded");
+
+          if (open) {
+            panel.classList.remove("expanded");
+            panel.classList.add("collapsed");
+            toggleBtn.innerText = "Advanced Filters ▾";
+            toggleBtn.setAttribute("aria-expanded", "false");
+          } else {
+            panel.classList.remove("collapsed");
+            panel.classList.add("expanded");
+            toggleBtn.innerText = "Advanced Filters ▴";
+            toggleBtn.setAttribute("aria-expanded", "true");
+          }
+        });
+
+        // Search
+        document
+          .getElementById("search-btn")
+          .addEventListener("click", searchEvents);
+        document
+          .getElementById("header-search-btn")
+          .addEventListener("click", searchEvents);
+        document
+          .getElementById("search-input")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") searchEvents();
+          });
+        document
+          .getElementById("header-search")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") searchEvents();
+          });
+
+        // Clear filters
+        document
+          .getElementById("clear-filters-btn")
+          .addEventListener("click", () => {
+            document.getElementById("filter-form").reset();
+            selectedGenre = "";
+            document.querySelectorAll(".genre-chip").forEach((chip) => {
+              chip.classList.remove("active");
+              if (chip.dataset.genre === "") chip.classList.add("active");
+            });
+            loadEvents();
+          });
+      }
+
+      // Search events
+      function searchEvents() {
+        const query =
+          document.getElementById("search-input").value ||
+          document.getElementById("header-search").value;
+        if (!query) return;
+
+        const filtered = allEvents.filter(
+          (event) =>
+            event.title.toLowerCase().includes(query.toLowerCase()) ||
+            event.description?.toLowerCase().includes(query.toLowerCase()) ||
+            event.location?.toLowerCase().includes(query.toLowerCase())
+        );
+
+        allEvents = filtered;
+        renderEvents();
+      }
+    </script>
+  </body>
 </html>
