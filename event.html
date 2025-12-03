@@ -262,7 +262,7 @@
       <!-- HERO / BANNER -->
       <section id="event-hero">
         <img
-          src="https://via.placeholder.com/1200x400? text=Event"
+          src="https://via.placeholder.com/1200x400?text=Event"
           alt="Event image"
           id="event-main-image"
         />
@@ -340,9 +340,15 @@
     </footer>
 
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-auth-compat.js"></script>
-    <script src="/firebase-config.js"></script>
+    <!-- Firebase -->
+    <script type="module">
+      import { auth } from "/web-proj/firebase-config.js";
+      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth. js";
+
+      // Make auth available globally for the main script
+      window.firebaseAuth = auth;
+      window.onAuthStateChanged = onAuthStateChanged;
+    </script>
 
     <script>
       let currentUser = null;
@@ -360,7 +366,7 @@
       // Initialize
       window.addEventListener("DOMContentLoaded", async () => {
         // Check authentication
-        firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+        onAuthStateChanged(window.firebaseAuth, async (firebaseUser) => {
           if (firebaseUser) {
             await loadCurrentUser(firebaseUser);
             updateUIForLoggedIn();
@@ -375,7 +381,7 @@
       // Load current user
       async function loadCurrentUser(firebaseUser) {
         try {
-          const response = await fetch("/api/me. php", {
+          const response = await fetch("/web-proj/api/me.php", {
             headers: { "X-Firebase-UID": firebaseUser.uid },
           });
           const data = await response.json();
@@ -397,7 +403,9 @@
       // Load event details
       async function loadEvent() {
         try {
-          const response = await fetch(`/api/events. php?id=${eventId}`);
+          const response = await fetch(
+            `/web-proj/api/events.php?id=${eventId}`
+          );
           const data = await response.json();
 
           if (data.success && data.event) {
@@ -430,15 +438,22 @@
         } • ${event.date || "Date TBA"} ${event.time ? "• " + event.time : ""}`;
 
         // Genres
+        // Genres (text-only, no emojis)
         const genresContainer = document.getElementById("event-genres");
         genresContainer.innerHTML = "";
-        (event.genre_icons || []).forEach((icon, i) => {
+        if (Array.isArray(event.genres) && event.genres.length) {
+          event.genres.forEach((gName) => {
+            const badge = document.createElement("span");
+            badge.className = "genre-badge";
+            badge.textContent = gName; // text-only
+            genresContainer.appendChild(badge);
+          });
+        } else if (event.genre_name) {
           const badge = document.createElement("span");
           badge.className = "genre-badge";
-          badge.innerHTML = `<span>${icon}</span><span>${event.genres[i]}</span>`;
+          badge.textContent = event.genre_name;
           genresContainer.appendChild(badge);
-        });
-
+        }
         // Description
         document.getElementById("event-description").textContent =
           event.description || "No description provided. ";
@@ -494,8 +509,8 @@
         if (!currentUser || !eventId) return;
 
         try {
-          const firebaseUser = firebase.auth().currentUser;
-          const response = await fetch("/api/favorites.php", {
+          const firebaseUser = window.firebaseAuth.currentUser;
+          const response = await fetch("/web-proj/api/favorites.php", {
             headers: { "X-Firebase-UID": firebaseUser.uid },
           });
           const data = await response.json();
@@ -526,15 +541,16 @@
       async function toggleFavorite() {
         if (!currentUser) {
           alert("Please log in to add favorites");
-          window.location.href = "/login. html";
+          window.location.href = "/web-proj/login.html";
           return;
         }
 
-        const firebaseUser = firebase.auth().currentUser;
+        const firebaseUser = window.firebaseAuth.currentUser;
 
         try {
           const response = await fetch(
-            "/api/favorites.php" + (isFavorited ? `?event_id=${eventId}` : ""),
+            "/web-proj/api/favorites.php" +
+              (isFavorited ? `?event_id=${eventId}` : ""),
             {
               method: isFavorited ? "DELETE" : "POST",
               headers: {
@@ -569,7 +585,7 @@
                 <div class="error-state">
                     <h2>⚠️ Error</h2>
                     <p>${message}</p>
-                    <a href="/" class="back-btn">Go Back Home</a>
+                    <a href="/web-proj/index.html" class="back-btn">Go Back Home</a>
                 </div>
             `;
       }
