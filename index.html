@@ -157,7 +157,7 @@
       <div class="tm-nav-content">
         <!-- LOGO -->
         <div class="tm-logo">
-          <a href="index. html">EventFinder</a>
+          <a href="index.html">EventFinder</a>
         </div>
 
         <!-- NAV LINKS -->
@@ -251,6 +251,27 @@
                 max="100"
               />
             </div>
+            <div class="filter-group">
+              <label for="filter-price">Max Price ($)</label>
+              <input
+                type="number"
+                id="filter-price"
+                placeholder="Any price"
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div class="filter-group">
+              <label for="filter-sort">Sort By</label>
+              <select id="filter-sort">
+                <option value="">Default</option>
+                <option value="date">Date (Earliest First)</option>
+                <option value="price-low">Price (Low to High)</option>
+                <option value="price-high">Price (High to Low)</option>
+                <option value="name">Name (A-Z)</option>
+              </select>
+            </div>
 
             <button type="submit" id="apply-filters-btn">Apply Filters</button>
             <button type="button" id="clear-filters-btn">Clear Filters</button>
@@ -276,7 +297,6 @@
 
     <!-- Firebase -->
     <!-- Firebase ES6 Module -->
-    <!-- REPLACE the existing <script type="module"> ... </script> in index.html with the script below -->
     <script type="module">
       import { auth } from "/web-proj/firebase-config.js";
       import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -416,7 +436,7 @@
         const title = event.name || event.title || "Untitled Event";
         const location = event.location || "Location TBA";
         const date = event.date || "TBA";
-        const time = event.time ? `• 🕐 ${event.time}` : "";
+        const time = event.time ? `• ${event.time}` : "";
         const price =
           event.price && parseFloat(event.price) > 0
             ? `$${parseFloat(event.price).toFixed(2)}`
@@ -491,7 +511,7 @@
         card.appendChild(infoP);
         if (distance) {
           const ddiv = document.createElement("div");
-          ddiv.innerHTML = distance; // ok for this small string
+          ddiv.innerHTML = distance;
           card.appendChild(ddiv);
         }
         card.appendChild(genresDiv);
@@ -517,36 +537,77 @@
         });
       }
 
-      // Load events from API (no emoji/icon usage)
+      // Load events from API (fixed path)
       async function loadEvents() {
         const container = document.getElementById("events-container");
         container.innerHTML =
           '<p class="loading-spinner">⏳ Loading events...</p>';
 
         try {
-          const params = new URLSearchParams();
-          if (selectedGenre) params.append("genre", selectedGenre);
-          if (userLocation) {
-            params.append("lat", userLocation.lat);
-            params.append("lng", userLocation.lng);
-            params.append("radius", 50);
+          // Build URL with filters
+          let url = "/web-proj/api/events.php"; // fixed: remove stray space
+          const qs = new URLSearchParams();
+
+          // Genre filter
+          if (selectedGenre) {
+            qs.append("genre", selectedGenre);
           }
 
-          const response = await fetch(
-            `/web-proj/api/events.php?${params.toString()}`
-          );
-          const data = await response.json();
-          console.log("Events API response:", data);
+          // Location filter (geolocation)
+          if (
+            userLocation &&
+            typeof userLocation.lat === "number" &&
+            typeof userLocation.lng === "number"
+          ) {
+            qs.append("lat", String(userLocation.lat));
+            qs.append("lng", String(userLocation.lng));
 
-          if (data.success) {
-            allEvents = data.events.map((e) => {
-              e.id = Number(e.id);
-              return e;
-            });
-            renderEvents();
+            // Use radius from filter or default
+            const radiusInput = document.getElementById("filter-radius");
+            const radius = radiusInput?.value || "50";
+            qs.append("radius", radius);
+          }
+
+          if ([...qs].length > 0) {
+            url = `${url}?${qs.toString()}`;
+          }
+
+          const response = await fetch(url);
+          const text = await response.text();
+          // defensive: if server returned HTML (e.g. 404 page) we'll log and throw
+          if (!response.ok) {
+            console.error(
+              "Events API returned non-OK response",
+              response.status,
+              text
+            );
+            throw new Error("Failed to load events");
+          }
+
+          // parse JSON after we've ensured server did not return HTML
+          const data = JSON.parse(text);
+
+          if (data && data.success && Array.isArray(data.events)) {
+            allEvents = data.events;
+
+            // Apply client-side filters
+            applyFilters();
+
+            // Update heading
+            if (selectedGenre) {
+              const genre = allGenres.find((g) => g.slug === selectedGenre);
+              document.getElementById("events-heading").textContent = `${
+                genre?.name || selectedGenre
+              } Events`;
+            } else if (allEvents.length > 0 && allEvents[0].distance_km) {
+              document.getElementById("events-heading").textContent =
+                "Nearby Events";
+            } else {
+              document.getElementById("events-heading").textContent =
+                "All Events";
+            }
           } else {
-            container.innerHTML =
-              '<div class="no-events"><h3>No events available</h3></div>';
+            throw new Error("Failed to load events");
           }
         } catch (error) {
           console.error("Failed to load events:", error);
@@ -555,6 +616,60 @@
         }
       }
 
+      // Apply client-side filters
+      function applyFilters() {
+        let filtered = [...allEvents];
+
+        // Date filter
+        const dateInput = document.getElementById("filter-date");
+        if (dateInput?.value) {
+          const filterDate = dateInput.value;
+          filtered = filtered.filter((event) => event.date === filterDate);
+        }
+
+        // Location text search
+        const locationInput = document.getElementById("filter-location");
+        if (locationInput?.value) {
+          const searchTerm = locationInput.value.toLowerCase();
+          filtered = filtered.filter((event) =>
+            event.location?.toLowerCase().includes(searchTerm)
+          );
+        }
+
+        // Price filter
+        const priceInput = document.getElementById("filter-price");
+        if (priceInput?.value) {
+          const maxPrice = parseFloat(priceInput.value);
+          filtered = filtered.filter((event) => {
+            const eventPrice = parseFloat(event.price) || 0;
+            return eventPrice <= maxPrice;
+          });
+        }
+
+        // Sort
+        const sortSelect = document.getElementById("filter-sort");
+        const sortBy = sortSelect?.value;
+
+        if (sortBy === "date") {
+          filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+        } else if (sortBy === "price-low") {
+          filtered.sort(
+            (a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0)
+          );
+        } else if (sortBy === "price-high") {
+          filtered.sort(
+            (a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0)
+          );
+        } else if (sortBy === "name") {
+          filtered.sort((a, b) =>
+            (a.title || a.name || "").localeCompare(b.title || b.name || "")
+          );
+        }
+
+        // Update the display
+        allEvents = filtered;
+        renderEvents();
+      }
       // Load user favorites
       async function loadFavorites() {
         if (!currentUser) return;
@@ -708,6 +823,13 @@
             toggleBtn.setAttribute("aria-expanded", (!open).toString());
           });
         }
+
+        document
+          .getElementById("filter-form")
+          .addEventListener("submit", (e) => {
+            e.preventDefault();
+            applyFilters();
+          });
 
         document
           .getElementById("clear-filters-btn")

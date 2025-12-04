@@ -26,6 +26,12 @@ try {
 
     // Require authentication for all operations
     $currentUser = $auth->requireAuth();
+    // Require authentication for all operations
+$currentUser = $auth->requireAuth();
+
+// Debug logging
+error_log("Favorites API - User ID: " . $currentUser['id']);
+error_log("Favorites API - Firebase UID: " . ($currentUser['firebase_uid'] ??  'none'));
 
     // GET - Fetch user's favorite events
     if ($method === 'GET') {
@@ -38,7 +44,7 @@ try {
                    GROUP_CONCAT(g.icon) as genre_icons
             FROM user_favorites uf
             JOIN events e ON uf.event_id = e.id
-            LEFT JOIN users u ON e.created_by = u.id
+            LEFT JOIN users u ON e.owner_id = u.id
             LEFT JOIN event_genres eg ON e.id = eg.event_id
             LEFT JOIN genres g ON eg.genre_id = g.id
             WHERE uf.user_id = :user_id AND e.status = 'published'

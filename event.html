@@ -113,7 +113,7 @@
         background: white;
         border-radius: 16px;
         padding: 30px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         border: 2px solid #667eea;
       }
 
@@ -144,7 +144,7 @@
         font-size: 1.1rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0 3s;
+        transition: all 0.3s;
       }
 
       #register-btn {
@@ -323,7 +323,7 @@
           <aside class="ticket-box">
             <div class="ticket-card">
               <h3>🎟️ Tickets & Registration</h3>
-              <div class="price-display" id="ticket-price">$0. 00</div>
+              <div class="price-display" id="ticket-price">$0.00</div>
               <p id="ticket-info">Get your tickets now!</p>
               <button id="register-btn">🎫 Register Now</button>
               <button id="favorite-btn">♡ Add to Favorites</button>
@@ -339,46 +339,64 @@
       <p class="disclaimer">Discover amazing events near you.</p>
     </footer>
 
-    <!-- Firebase -->
-    <!-- Firebase -->
+    <!-- Firebase: expose auth and onAuthStateChanged to the page -->
     <script type="module">
+      // Import the firebase auth helper (no stray spaces in the URL)
+      // Keep the same auth instance as your firebase-config.js exports.
       import { auth } from "/web-proj/firebase-config.js";
-      import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth. js";
+      import { onAuthStateChanged as fbOnAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-      // Make auth available globally for the main script
+      // Expose to global scope so the inline script below can use them
       window.firebaseAuth = auth;
-      window.onAuthStateChanged = onAuthStateChanged;
+      window.onAuthStateChanged = fbOnAuthStateChanged;
     </script>
 
     <script>
-      let currentUser = null;
-      let currentEvent = null;
-      let isFavorited = false;
-
-      // Get event ID from URL
+      // Safety: read event id from URL and bail early if missing
       const urlParams = new URLSearchParams(window.location.search);
       const eventId = urlParams.get("id");
 
       if (!eventId) {
-        showError("No event ID provided");
+        // showError is defined below; call it and stop execution
+        document.addEventListener("DOMContentLoaded", () => {
+          showError("No event ID provided");
+        });
+        // stop further script execution
+        throw new Error("Missing event id");
       }
 
-      // Initialize
+      let currentUser = null;
+      let currentEvent = null;
+      let isFavorited = false;
+
+      // Initialize after DOM loads
       window.addEventListener("DOMContentLoaded", async () => {
-        // Check authentication
-        onAuthStateChanged(window.firebaseAuth, async (firebaseUser) => {
-          if (firebaseUser) {
-            await loadCurrentUser(firebaseUser);
-            updateUIForLoggedIn();
-            await checkIfFavorited();
-          }
-        });
+        // Ensure firebase objects are available
+        if (!window.firebaseAuth || !window.onAuthStateChanged) {
+          console.warn(
+            "Firebase auth not available yet. Make sure firebase-config.js initializes Firebase."
+          );
+        } else {
+          // Use the modular onAuthStateChanged (exposed to window by the module above)
+          window.onAuthStateChanged(
+            window.firebaseAuth,
+            async (firebaseUser) => {
+              if (firebaseUser) {
+                await loadCurrentUser(firebaseUser);
+                updateUIForLoggedIn();
+                await checkIfFavorited();
+              } else {
+                // not signed in - still load event
+              }
+            }
+          );
+        }
 
         // Load event details
         await loadEvent();
       });
 
-      // Load current user
+      // Load current user from server using Firebase UID header
       async function loadCurrentUser(firebaseUser) {
         try {
           const response = await fetch("/web-proj/api/me.php", {
@@ -393,18 +411,16 @@
         }
       }
 
-      // Update UI for logged in user
       function updateUIForLoggedIn() {
         if (currentUser && ["admin", "owner"].includes(currentUser.role)) {
           document.getElementById("admin-link").style.display = "block";
         }
       }
 
-      // Load event details
       async function loadEvent() {
         try {
           const response = await fetch(
-            `/web-proj/api/events.php?id=${eventId}`
+            `/web-proj/api/events.php?id=${encodeURIComponent(eventId)}`
           );
           const data = await response.json();
 
@@ -420,7 +436,6 @@
         }
       }
 
-      // Render event details
       function renderEvent() {
         const event = currentEvent;
 
@@ -430,22 +445,28 @@
 
         // Hero section
         const imageUrl =
-          event.image_url || "https://via. placeholder.com/1200x400?text=Event";
+          event.image_url &&
+          typeof event.image_url === "string" &&
+          event.image_url.trim()
+            ? event.image_url
+            : `https://via.placeholder.com/1200x400?text=Event:${encodeURIComponent(
+                event.id || eventId
+              )}`;
         document.getElementById("event-main-image").src = imageUrl;
-        document.getElementById("event-title").textContent = event.title;
+        document.getElementById("event-title").textContent =
+          event.title || "Untitled Event";
         document.getElementById("event-subtitle").textContent = `${
           event.location || "Location TBA"
-        } • ${event.date || "Date TBA"} ${event.time ? "• " + event.time : ""}`;
+        } • ${event.date || "Date TBA"}${event.time ? " • " + event.time : ""}`;
 
         // Genres
-        // Genres (text-only, no emojis)
         const genresContainer = document.getElementById("event-genres");
         genresContainer.innerHTML = "";
         if (Array.isArray(event.genres) && event.genres.length) {
           event.genres.forEach((gName) => {
             const badge = document.createElement("span");
             badge.className = "genre-badge";
-            badge.textContent = gName; // text-only
+            badge.textContent = gName;
             genresContainer.appendChild(badge);
           });
         } else if (event.genre_name) {
@@ -454,9 +475,10 @@
           badge.textContent = event.genre_name;
           genresContainer.appendChild(badge);
         }
+
         // Description
         document.getElementById("event-description").textContent =
-          event.description || "No description provided. ";
+          event.description || "No description provided.";
 
         // Event info
         document.getElementById("info-date").textContent = event.date || "TBA";
@@ -464,7 +486,9 @@
         document.getElementById("info-location").textContent =
           event.location || "TBA";
         const price =
-          event.price > 0 ? `$${parseFloat(event.price).toFixed(2)}` : "FREE";
+          event.price && parseFloat(event.price) > 0
+            ? `$${parseFloat(event.price).toFixed(2)}`
+            : "FREE";
         document.getElementById("info-price").textContent = price;
         document.getElementById("info-age").textContent = event.age_restriction
           ? `${event.age_restriction}+`
@@ -474,37 +498,41 @@
 
         // Creator info
         if (event.creator_name) {
+          const createdAt = event.created_at
+            ? new Date(event.created_at).toLocaleDateString()
+            : "-";
           document.getElementById("creator-info").style.display = "block";
           document.getElementById("creator-name").textContent =
             event.creator_name;
-          document.getElementById("created-date").textContent = new Date(
-            event.created_at
-          ).toLocaleDateString();
+          document.getElementById("created-date").textContent = createdAt;
         }
 
         // Ticket card
         document.getElementById("ticket-price").textContent = price;
         document.getElementById("ticket-info").textContent =
-          event.price > 0
+          event.price && parseFloat(event.price) > 0
             ? "Purchase your tickets today!"
             : "Free entry - Register to attend!";
 
-        // Setup buttons
+        // Setup buttons (remove previous handlers if any to avoid duplicates)
+        const registerBtn = document.getElementById("register-btn");
+        registerBtn.replaceWith(registerBtn.cloneNode(true));
         document
           .getElementById("register-btn")
           .addEventListener("click", () => {
             alert("Registration functionality coming soon!");
           });
 
+        const favoriteBtn = document.getElementById("favorite-btn");
+        favoriteBtn.replaceWith(favoriteBtn.cloneNode(true));
         document
           .getElementById("favorite-btn")
           .addEventListener("click", toggleFavorite);
 
         // Update page title
-        document.title = `${event.title} | Event Finder`;
+        document.title = `${event.title || "Event"} | Event Finder`;
       }
 
-      // Check if event is favorited
       async function checkIfFavorited() {
         if (!currentUser || !eventId) return;
 
@@ -525,9 +553,9 @@
         }
       }
 
-      // Update favorite button
       function updateFavoriteButton() {
         const btn = document.getElementById("favorite-btn");
+        if (!btn) return;
         if (isFavorited) {
           btn.textContent = "❤️ Favorited";
           btn.classList.add("favorited");
@@ -537,7 +565,6 @@
         }
       }
 
-      // Toggle favorite
       async function toggleFavorite() {
         if (!currentUser) {
           alert("Please log in to add favorites");
@@ -550,7 +577,7 @@
         try {
           const response = await fetch(
             "/web-proj/api/favorites.php" +
-              (isFavorited ? `?event_id=${eventId}` : ""),
+              (isFavorited ? `?event_id=${encodeURIComponent(eventId)}` : ""),
             {
               method: isFavorited ? "DELETE" : "POST",
               headers: {
@@ -579,7 +606,6 @@
         }
       }
 
-      // Show error
       function showError(message) {
         document.getElementById("loading-container").innerHTML = `
                 <div class="error-state">
